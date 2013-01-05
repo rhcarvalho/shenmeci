@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <title>Shenmeci - Simple Chinese Dictionary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Simple Chinese-English Dictionary">
+    <meta name="author" content="Rodolfo Henrique Carvalho">
+
+    <!-- Le styles -->
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="/static/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/static/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="/static/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="/static/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="/static/ico/apple-touch-icon-57-precomposed.png">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Shenmeci</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <h1>什么词</h1>
+      <p>Type some text in Chinese:</p>
+	  <blockquote><em>Example</em><br>
+		  1月4日下午，市委书记孙政才走访市人大、市政协机关，看望慰问机关干部。
+		  他强调，要把深入学习贯彻党的十八大精神作为首要政治任务，
+		  充分发挥人大、政协的职能作用，群策群力，团结协作，求真务实，
+		  真抓实干，为在西部地区率先实现全面建成小康社会目标作出新的贡献。
+	  </blockquote>
+
+      <form id="search" class="well form-search">
+		<textarea rows="3" class="input-xlarge" id="q" name="q" placeholder="我不知道今天是星期几"></textarea>
+        <button type="submit" class="btn"><i class="icon-chevron-right"></i></button>
+      </form>
+
+      <div id="results">
+        <table class="table table-striped table-bordered hide">
+          <thead>
+            <tr>
+              <th style="width: 50px;">Hanzi</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </div>
+
+      <hr>
+
+      <footer>
+        <p>&copy; Rodolfo Carvalho 2012</p>
+      </footer>
+
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/bootstrap-transition.js"></script>
+    <script src="/static/js/bootstrap-alert.js"></script>
+    <script src="/static/js/bootstrap-modal.js"></script>
+    <script src="/static/js/bootstrap-dropdown.js"></script>
+    <script src="/static/js/bootstrap-scrollspy.js"></script>
+    <script src="/static/js/bootstrap-tab.js"></script>
+    <script src="/static/js/bootstrap-tooltip.js"></script>
+    <script src="/static/js/bootstrap-popover.js"></script>
+    <script src="/static/js/bootstrap-button.js"></script>
+    <script src="/static/js/bootstrap-collapse.js"></script>
+    <script src="/static/js/bootstrap-carousel.js"></script>
+    <script src="/static/js/bootstrap-typeahead.js"></script>
+    <script src="/static/js/spin.js"></script>
+    <script>
+      $('#search').submit(function() {
+        var q = $('#q').val();
+        $('#results table').addClass('hide');
+
+        var opts = {
+          lines: 13, // The number of lines to draw
+          length: 7, // The length of each line
+          width: 4, // The line thickness
+          radius: 10, // The radius of the inner circle
+          rotate: 0, // The rotation offset
+          color: '#000', // #rgb or #rrggbb
+          speed: 1, // Rounds per second
+          trail: 60, // Afterglow percentage
+          shadow: false, // Whether to render a shadow
+          hwaccel: false, // Whether to use hardware acceleration
+          className: 'spinner', // The CSS class to assign to the spinner
+          zIndex: 2e9, // The z-index (defaults to 2000000000)
+          top: 'auto', // Top position relative to parent in px
+          left: 'auto' // Left position relative to parent in px
+        };
+        var spinner = new Spinner(opts).spin($('#results').get(0));
+        var spinner_wrapper = $('#results .spinner').wrap('<div class="well-large" />').parent();
+
+        $.getJSON('segment?q=' + q, function(data) {
+          var items = [];
+          $.each(data.r, function(idx, item) {
+            items.push('<tr><td style="white-space: nowrap;">' + item['z'] +
+                       '</td><td><ol><li>' +
+					   item['m'].split('/').filter(Boolean).join('</li><li>') +
+					   '</li></ol></td></tr>');
+          });
+          if ($.isEmptyObject(data.r)) {
+            items.push('<tr><td colspan="2">I\'m speechless.</td></tr>');
+          }
+          $('#results table tbody').html(items.join(''));
+        })
+        .error(function() {
+          $('#results table tbody').html('<tr><td colspan="2">Something went wrong :-(</td></tr>');
+        })
+        .complete(function() {
+          spinner.stop();
+          spinner_wrapper.remove();
+          $('#results table').removeClass('hide');
+        });
+        return false;
+      });
+    </script>
+
+  </body>
+</html>
