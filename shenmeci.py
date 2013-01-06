@@ -55,12 +55,15 @@ class ChineseWordSegmenter(WordSegmenter):
         except AttributeError:
             import gzip
             vocabulary = dict()
-            for line in gzip.open('dict/cedict_1_0_ts_utf-8_mdbg.txt.gz'):
-                if line.startswith('#'):
-                    continue
-                simplified_hanzi = line.split()[1].decode('utf-8')
-                meaning = line[line.find('/'):].strip()
-                vocabulary[simplified_hanzi] = meaning
+            root_dir = os.path.dirname(__file__)
+            cedict_path = os.path.join(root_dir, 'dict', 'cedict_1_0_ts_utf-8_mdbg.txt.gz')
+            with gzip.open(cedict_path) as cedict:
+                for line in cedict:
+                    if line.startswith('#'):
+                        continue
+                    simplified_hanzi = line.split()[1].decode('utf-8')
+                    meaning = line[line.find('/'):].strip()
+                    vocabulary[simplified_hanzi] = meaning
             ChineseWordSegmenter.__vocabulary = vocabulary
             return vocabulary
             
