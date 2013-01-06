@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-from bottle import route, run, request, static_file, template
+from bottle import route, request, static_file
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 
@@ -69,6 +69,11 @@ class ChineseWordSegmenter(WordSegmenter):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('--port', type=int, default=8080, help='port to bind the HTTP server')
+    args = parser.parse_args()
+
     import bottle
     bottle.debug(True)
-    run(host='localhost', port=8080, reloader=True)
+    bottle.run(host='localhost', port=args.port, reloader=True)
