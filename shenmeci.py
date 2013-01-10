@@ -22,6 +22,7 @@
 import os
 import gzip
 
+
 class WordSegmenter(object):
     def __init__(self, vocabulary):
         self.vocabulary = vocabulary
@@ -46,14 +47,17 @@ class WordSegmenter(object):
 
 def dict_path(file):
     parent_directory = os.path.dirname(__file__)
-    path = os.path.join(parent_directory, 'dict', file)
+    path = os.path.join(parent_directory, "dict", file)
     return path
 
 def load_cedict():
+    # TODO: this could be in some sort of configuration file
+    cedict_file = "cedict_1_0_ts_utf-8_mdbg.txt.gz"
+    cedict_path = dict_path(cedict_file)
     vocabulary = dict()
-    cedict_path = dict_path('cedict_1_0_ts_utf-8_mdbg.txt.gz')
     with gzip.open(cedict_path) as cedict:
         for line in cedict:
+            # skip comments
             if line.startswith('#'):
                 continue
             simplified_hanzi = line.split()[1].decode('utf-8')
