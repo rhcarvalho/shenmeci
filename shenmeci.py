@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import gzip
 
 class WordSegmenter(object):
     def __init__(self, vocabulary):
@@ -43,6 +44,24 @@ class WordSegmenter(object):
             return [longest_word] + self.segment(sentence[len(longest_word):])
 
 
+def dict_path(file):
+    parent_directory = os.path.dirname(__file__)
+    path = os.path.join(parent_directory, 'dict', file)
+    return path
+
+def load_cedict():
+    vocabulary = dict()
+    cedict_path = dict_path('cedict_1_0_ts_utf-8_mdbg.txt.gz')
+    with gzip.open(cedict_path) as cedict:
+        for line in cedict:
+            if line.startswith('#'):
+                continue
+            simplified_hanzi = line.split()[1].decode('utf-8')
+            meaning = line[line.find('/'):].strip()
+            vocabulary[simplified_hanzi] = meaning
+    return vocabulary
+
+
 class ChineseWordSegmenter(WordSegmenter):
     """ChineseWordSegmenter"""
     def __init__(self):
@@ -52,17 +71,7 @@ class ChineseWordSegmenter(WordSegmenter):
         try:
             return ChineseWordSegmenter.__vocabulary
         except AttributeError:
-            import gzip
-            vocabulary = dict()
-            root_dir = os.path.dirname(__file__)
-            cedict_path = os.path.join(root_dir, 'dict', 'cedict_1_0_ts_utf-8_mdbg.txt.gz')
-            with gzip.open(cedict_path) as cedict:
-                for line in cedict:
-                    if line.startswith('#'):
-                        continue
-                    simplified_hanzi = line.split()[1].decode('utf-8')
-                    meaning = line[line.find('/'):].strip()
-                    vocabulary[simplified_hanzi] = meaning
+            vocabulary = load_cedict()
             ChineseWordSegmenter.__vocabulary = vocabulary
             return vocabulary
     
