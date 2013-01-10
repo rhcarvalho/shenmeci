@@ -64,6 +64,8 @@ def load_cedict():
             simplified_hanzi = line.split()[1].decode('utf-8')
             meaning = line[line.find('/'):].strip()
             vocabulary[simplified_hanzi].append(meaning)
+    # transform vocabulary into a dict of (unicode-string, byte-string) pairs
+    vocabulary = dict((k, '/'.join(v)) for k, v in vocabulary.iteritems())
     return vocabulary
 
 
@@ -81,4 +83,4 @@ class ChineseWordSegmenter(WordSegmenter):
             return vocabulary
     
     def lookup_meaning(self, words):
-        return [(word, self.vocabulary.get(word, ["?"])) for word in words]
+        return [(word, self.vocabulary.get(word, "?")) for word in words]
