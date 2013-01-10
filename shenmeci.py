@@ -21,6 +21,7 @@
 
 import os
 import gzip
+from collections import defaultdict
 
 
 class WordSegmenter(object):
@@ -54,7 +55,7 @@ def load_cedict():
     # TODO: this could be in some sort of configuration file
     cedict_file = "cedict_1_0_ts_utf-8_mdbg.txt.gz"
     cedict_path = dict_path(cedict_file)
-    vocabulary = dict()
+    vocabulary = defaultdict(list)
     with gzip.open(cedict_path) as cedict:
         for line in cedict:
             # skip comments
@@ -62,7 +63,7 @@ def load_cedict():
                 continue
             simplified_hanzi = line.split()[1].decode('utf-8')
             meaning = line[line.find('/'):].strip()
-            vocabulary[simplified_hanzi] = meaning
+            vocabulary[simplified_hanzi].append(meaning)
     return vocabulary
 
 
@@ -80,4 +81,4 @@ class ChineseWordSegmenter(WordSegmenter):
             return vocabulary
     
     def lookup_meaning(self, words):
-        return [(word, self.vocabulary.get(word, "?")) for word in words]
+        return [(word, self.vocabulary.get(word, ["?"])) for word in words]

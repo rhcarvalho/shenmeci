@@ -41,7 +41,7 @@ def segment():
     query = request.query.q
     segmenter = ChineseWordSegmenter()
     words = segmenter.segment(query)
-    result = [dict(z=z, m=m) for z, m in segmenter.lookup_meaning(words)]
+    result = [dict(z=z, m='/'.join(m)) for z, m in segmenter.lookup_meaning(words)]
     return {u"r": result}
 
 
