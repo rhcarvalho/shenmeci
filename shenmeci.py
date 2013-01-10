@@ -44,37 +44,41 @@ class WordSegmenter(object):
         return words
 
 
-def dict_path(file):
-    parent_directory = os.path.dirname(__file__)
-    path = os.path.join(parent_directory, "dict", file)
-    return path
+class WordTranslator(object):
+    def __init__(self, vocabulary):
+        self.vocabulary = vocabulary
 
-def load_cedict():
-    global load_cedict
-    # TODO: this could be in some sort of configuration file
-    cedict_file = "cedict_1_0_ts_utf-8_mdbg.txt.gz"
-    cedict_path = dict_path(cedict_file)
-    vocabulary = defaultdict(list)
-    with gzip.open(cedict_path) as cedict:
-        for line in cedict:
-            # skip comments
-            if line.startswith('#'):
-                continue
-            simplified_hanzi = line.split()[1].decode('utf-8')
-            meaning = line[line.find('/'):].strip()
-            vocabulary[simplified_hanzi].append(meaning)
-    # transform vocabulary into a dict of (unicode-string, byte-string) pairs
-    vocabulary = dict((k, '/'.join(v)) for k, v in vocabulary.iteritems())
-    # change global binding to always return the vocabulary without recomputing
-    # (this may be not a very good idea)
-    load_cedict = lambda: vocabulary
-    return vocabulary
-
-
-class ChineseWordSegmenter(WordSegmenter):
-    """ChineseWordSegmenter"""
-    def __init__(self):
-        super(ChineseWordSegmenter, self).__init__(load_cedict())
-    
-    def lookup_meaning(self, words):
+    def lookup_meanings(self, words):
         return [(word, self.vocabulary.get(word, "?")) for word in words]
+
+
+class CEDICT(object):
+    def __init__(self):
+        # TODO: this could be in some sort of configuration file
+        parent_directory = os.path.dirname(__file__)
+        dictionaries_directory = os.path.join(parent_directory, "dict")
+        cedict_file = "cedict_1_0_ts_utf-8_mdbg.txt.gz"
+        self._cedict_path = os.path.join(dictionaries_directory, cedict_file)
+        self.vocabulary = []
+        self.load_cedict()
+
+    def load_cedict(self):
+        """Load a CEDICT Chinese-English dictionary file."""
+        cedict_path = self._cedict_path
+        vocabulary = defaultdict(list)
+        with gzip.open(cedict_path) as cedict:
+            for line in cedict:
+                # skip comments
+                if line.startswith('#'):
+                    continue
+                simplified_hanzi = line.split()[1].decode('utf-8')
+                meaning = line[line.find('/'):].strip()
+                vocabulary[simplified_hanzi].append(meaning)
+        # transform vocabulary into a dict of (unicode-string, byte-string) pairs
+        vocabulary = dict((k, '/'.join(v)) for k, v in vocabulary.iteritems())
+        self.vocabulary = vocabulary
+
+
+cedict = CEDICT()
+ChineseWordSegmenter = WordSegmenter(cedict.vocabulary)
+ChineseEnglishWordTranslator = WordTranslator(cedict.vocabulary)

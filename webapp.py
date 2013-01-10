@@ -23,7 +23,7 @@
 import os
 from bottle import route, request, static_file
 
-from shenmeci import ChineseWordSegmenter
+from shenmeci import ChineseWordSegmenter, ChineseEnglishWordTranslator
 
 STATIC_PATH = os.path.join(os.path.dirname(__file__), 'static')
 
@@ -39,9 +39,8 @@ def index():
 @route('/segment')
 def segment():
     query = request.query.q
-    segmenter = ChineseWordSegmenter()
-    words = segmenter.segment(query)
-    result = [dict(z=z, m=m) for z, m in segmenter.lookup_meaning(words)]
+    words = ChineseWordSegmenter.segment(query)
+    result = [dict(z=z, m=m) for z, m in ChineseEnglishWordTranslator.lookup_meanings(words)]
     return {u"r": result}
 
 
