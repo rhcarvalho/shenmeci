@@ -63,6 +63,6 @@ class ChineseWordSegmenter(WordSegmenter):
                     vocabulary[simplified_hanzi] = meaning
             ChineseWordSegmenter.__vocabulary = vocabulary
             return vocabulary
-            
+    
     def lookup_meaning(self, words):
         return [(word, self.vocabulary.get(word, "?")) for word in words]
