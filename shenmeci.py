@@ -30,20 +30,18 @@ class WordSegmenter(object):
     
     def segment(self, sentence):
         """Break a sentence into a list of words."""
-        if not sentence:
-            return []
-        if sentence in self.vocabulary:
-            return [sentence]
-        else:
+        words = []
+        while sentence:
             longest_word = sentence[:1]
-            for i in xrange(2, len(sentence)):
+            for i in xrange(2, len(sentence) + 1):
                 maybe_word = sentence[:i]
                 if maybe_word in self.vocabulary:
                     longest_word = maybe_word
-                    continue
                 else:
                     break
-            return [longest_word] + self.segment(sentence[len(longest_word):])
+            words.append(longest_word)
+            sentence = sentence[len(longest_word):]
+        return words
 
 
 def dict_path(file):
