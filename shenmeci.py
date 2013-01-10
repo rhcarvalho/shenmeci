@@ -73,7 +73,7 @@ class ChineseWordSegmenter(WordSegmenter):
 
 if __name__ == '__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser = argparse.ArgumentParser(description='Run web server.')
     parser.add_argument('--port', type=int, default=8080, help='port to bind the HTTP server')
     args = parser.parse_args()
 
