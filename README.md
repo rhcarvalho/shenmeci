@@ -23,3 +23,4 @@ Development/deployment dependencies
 
 * Python 2.7 (http://python.org/)
 * Bottle (http://bottlepy.org/)
+* DAWG (http://pypi.python.org/pypi/DAWG)
