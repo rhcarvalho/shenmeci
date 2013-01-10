@@ -8,6 +8,7 @@ class BaseWordSegmenterTestCase(unittest.TestCase):
         vocabulary = set("""
         A
         AB
+        ABCD
         C
         """.split())
         self.segmenter = WordSegmenter(vocabulary)
@@ -41,6 +42,12 @@ class SegmentThreeWordsTests(BaseWordSegmenterTestCase):
     def test_three_single_character_words(self):
         sentence = "ACD"
         self.assertEqual(["A", "C", "D"], self.segmenter.segment(sentence))
+
+
+class SegmentLongWordsTests(BaseWordSegmenterTestCase):
+    def test_long_word_prefix_wont_match(self):
+        sentence = "ABCDZ"
+        self.assertEqual(["ABCD", "Z"], self.segmenter.segment(sentence))
 
 
 if __name__ == '__main__':
