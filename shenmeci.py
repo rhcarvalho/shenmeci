@@ -52,6 +52,7 @@ def dict_path(file):
     return path
 
 def load_cedict():
+    global load_cedict
     # TODO: this could be in some sort of configuration file
     cedict_file = "cedict_1_0_ts_utf-8_mdbg.txt.gz"
     cedict_path = dict_path(cedict_file)
@@ -66,21 +67,16 @@ def load_cedict():
             vocabulary[simplified_hanzi].append(meaning)
     # transform vocabulary into a dict of (unicode-string, byte-string) pairs
     vocabulary = dict((k, '/'.join(v)) for k, v in vocabulary.iteritems())
+    # change global binding to always return the vocabulary without recomputing
+    # (this may be not a very good idea)
+    load_cedict = lambda: vocabulary
     return vocabulary
 
 
 class ChineseWordSegmenter(WordSegmenter):
     """ChineseWordSegmenter"""
     def __init__(self):
-        super(ChineseWordSegmenter, self).__init__(self.load_chinese_vocabulary())
-    
-    def load_chinese_vocabulary(self):
-        try:
-            return ChineseWordSegmenter.__vocabulary
-        except AttributeError:
-            vocabulary = load_cedict()
-            ChineseWordSegmenter.__vocabulary = vocabulary
-            return vocabulary
+        super(ChineseWordSegmenter, self).__init__(load_cedict())
     
     def lookup_meaning(self, words):
         return [(word, self.vocabulary.get(word, "?")) for word in words]
