@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 # Shenmeci: Chinese word segmentation and Chinese-English online dictionary.
@@ -123,3 +124,15 @@ class CEDICT(object):
 cedict = CEDICT()
 ChineseWordSegmenter = DAWGWordSegmenter(dawg=cedict.dawg)
 ChineseEnglishWordTranslator = WordTranslator(cedict.vocabulary)
+
+if __name__ == '__main__':
+    import argparse, sys
+    parser = argparse.ArgumentParser(description='Segment a text file written in Chinese.')
+    parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),
+                        default=sys.stdin, help='from where to read unsegmented text')
+    parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
+                        default=sys.stdout, help='where to write text segmented into words')
+    args = parser.parse_args()
+
+    words = ChineseWordSegmenter.segment(args.infile.read().decode('utf-8'))
+    args.outfile.write(u" ".join(words).encode('utf-8'))
