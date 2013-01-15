@@ -22,13 +22,24 @@
 DATA=icwb2-data
 GOLD=$DATA/gold
 TESTING=$DATA/testing
-
-SEGMENTED=$DATA/segmented.utf8
-RESULT=$DATA/result.utf8
+TRAINING=$DATA/training
 
 score=$DATA/scripts/score
 shenmeci=./shenmeci.py
 
-$shenmeci $TESTING/cityu_test.utf8 $SEGMENTED &&
+compute_score () {
+	DATASET=$1
 
-perl $score $GOLD/{cityu_training_words.utf8,cityu_test_gold.utf8} $SEGMENTED | tee $RESULT | grep ===
+  SEGMENTED=$DATA/segmented_${DATASET}.utf8
+  RESULT=$DATA/result_${DATASET}.utf8
+
+  $shenmeci $TESTING/${DATASET}_test.utf8 $SEGMENTED --learn $TRAINING/${DATASET}_training.utf8 &&
+
+	echo "Score for $DATASET"
+  perl $score $GOLD/${DATASET}_{training_words,test_gold}.utf8 $SEGMENTED | tee $RESULT | grep ===
+}
+
+compute_score as
+compute_score cityu
+compute_score msr
+compute_score pku
