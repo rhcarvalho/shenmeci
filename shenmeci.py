@@ -87,7 +87,7 @@ class CEDICT(object):
         dawg_file = "cedict.dawg"
         self._cedict_path = os.path.join(dictionaries_directory, cedict_file)
         self._dawg_path = os.path.join(dictionaries_directory, dawg_file)
-        self.vocabulary = []
+        self.vocabulary = {}
         self.dawg = None
         self.load_cedict()
         self.load_dawg()
