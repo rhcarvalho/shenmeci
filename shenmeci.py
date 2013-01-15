@@ -132,7 +132,13 @@ if __name__ == '__main__':
                         default=sys.stdin, help='from where to read unsegmented text')
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, help='where to write text segmented into words')
+    parser.add_argument('--learn', type=argparse.FileType('r'),
+                        help='where to write text segmented into words')
     args = parser.parse_args()
+
+    if args.learn:
+        new_words = args.learn.read().decode('utf-8').split()
+        ChineseWordSegmenter = DAWGWordSegmenter(vocabulary=new_words)
 
     words = ChineseWordSegmenter.segment(args.infile.read().decode('utf-8'))
     args.outfile.write(u" ".join(words).encode('utf-8'))
