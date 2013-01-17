@@ -71,11 +71,11 @@ class DAWGWordSegmenter(object):
 
 
 class WordTranslator(object):
-    def __init__(self, vocabulary):
-        self.vocabulary = vocabulary
+    def __init__(self, dictionary):
+        self.dictionary = dictionary
 
     def lookup_meanings(self, words):
-        return [(word, self.vocabulary.get(word, "?")) for word in words]
+        return [(word, self.dictionary.get(word, "?")) for word in words]
 
 
 class CEDICT(object):
@@ -87,7 +87,7 @@ class CEDICT(object):
         dawg_file = "cedict.dawg"
         self._cedict_path = os.path.join(dictionaries_directory, cedict_file)
         self._dawg_path = os.path.join(dictionaries_directory, dawg_file)
-        self.vocabulary = {}
+        self.dictionary = {}
         self.dawg = None
         self.load_cedict()
         self.load_dawg()
@@ -95,7 +95,7 @@ class CEDICT(object):
     def load_cedict(self):
         """Load a CEDICT Chinese-English dictionary file."""
         cedict_path = self._cedict_path
-        vocabulary = defaultdict(list)
+        dictionary = defaultdict(list)
         with gzip.open(cedict_path) as cedict:
             for line in cedict:
                 # skip comments
@@ -103,27 +103,27 @@ class CEDICT(object):
                     continue
                 simplified_hanzi = line.split()[1].decode('utf-8')
                 meaning = line[line.find('/'):].strip()
-                vocabulary[simplified_hanzi].append(meaning)
-        # transform vocabulary into a dict of (unicode-string, byte-string) pairs
-        vocabulary = dict((k, '/'.join(v)) for k, v in vocabulary.iteritems())
-        self.vocabulary = vocabulary
+                dictionary[simplified_hanzi].append(meaning)
+        # transform dictionary into a dict of (unicode-string, byte-string) pairs
+        dictionary = dict((k, '/'.join(v)) for k, v in dictionary.iteritems())
+        self.dictionary = dictionary
 
     def load_dawg(self):
         """Load Directed Acyclic Word Graph from vocabulary."""
-        assert hasattr(self, "vocabulary")
+        assert hasattr(self, "dictionary")
         dawg_path = self._dawg_path
         if os.path.exists(dawg_path):
             dawg = DAWG()
             dawg.load(dawg_path)
         else:
-            dawg = DAWG(self.vocabulary.iterkeys())
+            dawg = DAWG(self.dictionary.iterkeys())
             dawg.save(dawg_path)
         self.dawg = dawg
 
 
 cedict = CEDICT()
 ChineseWordSegmenter = DAWGWordSegmenter(dawg=cedict.dawg)
-ChineseEnglishWordTranslator = WordTranslator(cedict.vocabulary)
+ChineseEnglishWordTranslator = WordTranslator(cedict.dictionary)
 
 if __name__ == '__main__':
     import argparse, sys
