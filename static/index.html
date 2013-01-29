@@ -127,6 +127,8 @@
     <script src="/static/js/spin.js"></script>
     <script>
       $('#search').submit(function() {
+        // change to the dictionary tab
+        $('.navbar .nav li a:first').trigger('click');
         var q = $('#q').val();
         $('#results table').addClass('hide');
 
