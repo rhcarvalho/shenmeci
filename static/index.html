@@ -39,38 +39,64 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Shenmeci</a>
+          <a class="brand" href="#">什么词？</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li class="active"><a href="#dict" data-toggle="tab">Dictionary</a></li>
+              <li><a href="#help" data-toggle="tab">Help</a></li>
+              <li><a href="#about" data-toggle="tab" data-toggle="tab">About</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
         </div>
       </div>
     </div>
 
     <div class="container">
 
-      <h1>什么词</h1>
-      <p>Type some text in Chinese:</p>
-	  <blockquote><em>Example</em><br>
-		  1月4日下午，市委书记孙政才走访市人大、市政协机关，看望慰问机关干部。
-		  他强调，要把深入学习贯彻党的十八大精神作为首要政治任务，
-		  充分发挥人大、政协的职能作用，群策群力，团结协作，求真务实，
-		  真抓实干，为在西部地区率先实现全面建成小康社会目标作出新的贡献。
-	  </blockquote>
-
       <form id="search" class="well form-search">
         <input class="input-xlarge" id="q" name="q" placeholder="type here a word or sentence in Chinese">
         <button type="submit" class="btn"><i class="icon-chevron-right"></i></button>
       </form>
 
-      <div id="results">
-        <table class="table table-striped table-bordered hide">
-          <thead>
-            <tr>
-              <th style="width: 50px;">Hanzi</th>
-              <th>Meaning</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
+      <div class="tab-content">
+        <div class="tab-pane active" id="dict">
+          <div id="results">
+            <table class="table table-striped table-bordered hide">
+              <thead>
+                <tr>
+                  <th style="width: 50px;">Hanzi</th>
+                  <th>Meaning</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tab-pane" id="help">
+          <p>Using the dictionary in two steps:</p>
+          <ol>
+            <li>Type some text in Chinese in the text field above</li>
+            <li>Press <em>ENTER</em> or click the arrow button to see the translation</li>
+          </ol>
+          <hr>
+          <p>Examples of text to translate:</p>
+          <p><em>Simple sentence</em></p>
+          <blockquote>
+            我每天早上上课
+          </blockquote>
+          <p><em>Complex sentence</em></p>
+          <blockquote>
+              1月4日下午，市委书记孙政才走访市人大、市政协机关，看望慰问机关干部。
+              他强调，要把深入学习贯彻党的十八大精神作为首要政治任务，充分发挥人大、
+              政协的职能作用，群策群力，团结协作，求真务实，真抓实干，为在西部地区
+              率先实现全面建成小康社会目标作出新的贡献。
+          </blockquote>
+        </div>
+        <div class="tab-pane" id="about">
+          <p>
+            Yet to be written.
+          </p>
+        </div>
       </div>
 
       <hr>
