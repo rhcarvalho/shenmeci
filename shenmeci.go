@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"compress/gzip"
 	"flag"
-	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"unicode/utf8"
@@ -60,12 +60,34 @@ func loadCEDICT(filename string) (map[string][]string, error) {
 	return dict, nil
 }
 
-var cedictPath = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
+var (
+	cedictPath      = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
+	inFilePath      = flag.String("infile", "", "from where to read unsegmented text (defaults to stdin)")
+	outFilePath     = flag.String("outfile", "", "where to write text segmented into words (defaults to stdout)")
+	inFile, outFile *os.File
+	err             error
+)
 
 func main() {
 	flag.Parse()
 	if *cedictPath == "" {
 		log.Fatal("Missing environment variable CEDICT or command-line argument -dict.")
+	}
+	if *inFilePath == "" {
+		inFile = os.Stdin
+	} else {
+		inFile, err = os.Open(*inFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	if *outFilePath == "" {
+		outFile = os.Stdout
+	} else {
+		outFile, err = os.Create(*outFilePath)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	dict, err := loadCEDICT(*cedictPath)
 	if err != nil {
@@ -75,5 +97,14 @@ func main() {
 	for k := range dict {
 		d.Insert(k)
 	}
-	fmt.Println(segment(d, "语言信息处理"))
+	unsegmentedText, err := ioutil.ReadAll(inFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i, s := range segment(d, string(unsegmentedText)) {
+		if i > 0 {
+			outFile.Write([]byte{' '})
+		}
+		outFile.WriteString(s)
+	}
 }
