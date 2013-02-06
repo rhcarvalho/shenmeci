@@ -80,6 +80,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer inFile.Close()
 	}
 	if *outFilePath == "" {
 		outFile = os.Stdout
@@ -88,6 +89,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer outFile.Close()
 	}
 	dict, err := loadCEDICT(*cedictPath)
 	if err != nil {
