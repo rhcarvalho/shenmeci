@@ -133,7 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('outfile', nargs='?', type=argparse.FileType('w'),
                         default=sys.stdout, help='where to write text segmented into words')
     parser.add_argument('--learn', type=argparse.FileType('r'),
-                        help='where to write text segmented into words')
+                        help='use vocabulary from this file instead of CEDICT')
     args = parser.parse_args()
 
     if args.learn:
