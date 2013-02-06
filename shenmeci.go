@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"flag"
+	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
 	"io/ioutil"
@@ -56,6 +57,76 @@ func loadCEDICT(filename string) (map[string][]string, error) {
 		}
 	}
 	return dict, nil
+}
+
+func loadCEDICT2(filename string) (dict map[string][]string, err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	r, err := gzip.NewReader(f)
+	if err != nil {
+		return
+	}
+	defer r.Close()
+	br := bufio.NewReader(r)
+	dict = make(map[string][]string)
+	for {
+		line, err := br.ReadBytes('\n')
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		if line[0] == '#' {
+			continue
+		}
+		parts := bytes.SplitN(line, []byte{' '}, 3)
+		if len(parts) != 3 {
+			return nil, fmt.Errorf("line not in CEDICT format: %q", line)
+		}
+		hanzi := string(parts[1])
+		meaning := string(bytes.TrimSpace(line[bytes.IndexByte(line, '/'):]))
+		dict[hanzi] = append(dict[hanzi], meaning)
+		if err == io.EOF {
+			break
+		}
+	}
+	return
+}
+
+func loadCEDICT3(filename string) (dict map[string][]string, err error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	r, err := gzip.NewReader(f)
+	if err != nil {
+		return
+	}
+	defer r.Close()
+	br := bufio.NewReader(r)
+	dict = make(map[string][]string)
+	for {
+		line, err := br.ReadBytes('\n')
+		if err != nil && err != io.EOF {
+			return nil, err
+		}
+		if line[0] == '#' {
+			continue
+		}
+		parts := bytes.SplitN(line, []byte{' '}, 3)
+		if len(parts) != 3 {
+			return nil, fmt.Errorf("line not in CEDICT format: %q", line)
+		}
+		hanzi := string(parts[1])
+		meaning := string(bytes.TrimSpace(parts[2][bytes.IndexByte(parts[2], '/'):]))
+		dict[hanzi] = append(dict[hanzi], meaning)
+		if err == io.EOF {
+			break
+		}
+	}
+	return
 }
 
 var (
