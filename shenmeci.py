@@ -126,7 +126,11 @@ ChineseWordSegmenter = DAWGWordSegmenter(dawg=cedict.dawg)
 ChineseEnglishWordTranslator = WordTranslator(cedict.dictionary)
 
 if __name__ == '__main__':
-    import argparse, sys
+    import argparse, io, sys
+    def open_utf8(path, mode, bufsize):
+        return io.open(path, mode, bufsize, encoding="utf8")
+    # Monkey-patch built-in "open" (used by argparse) to work with utf-8 encoded files
+    __builtins__.open = open_utf8
     parser = argparse.ArgumentParser(description='Segment a text file written in Chinese.')
     parser.add_argument('infile', nargs='?', type=argparse.FileType('r'),
                         default=sys.stdin, help='from where to read unsegmented text')
@@ -137,8 +141,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.learn:
-        new_words = args.learn.read().decode('utf-8').split()
+        new_words = args.learn.read().split()
         ChineseWordSegmenter = DAWGWordSegmenter(vocabulary=new_words)
 
-    words = ChineseWordSegmenter.segment(args.infile.read().decode('utf-8'))
-    args.outfile.write(u" ".join(words).encode('utf-8'))
+    words = ChineseWordSegmenter.segment(args.infile.read())
+    args.outfile.write(u" ".join(words))
