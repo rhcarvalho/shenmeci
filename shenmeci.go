@@ -10,21 +10,19 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"unicode/utf8"
 )
 
-func segment(d *dawg.DAWG, sentence string) (words []string) {
-	var longestWord string
-	s := []rune(sentence)
-	for len(s) > 0 {
-		prefixes := d.Prefixes(string(s))
+func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
+	var longestWord []rune
+	for len(sentence) > 0 {
+		prefixes := d.Prefixes(sentence)
 		if len(prefixes) > 0 {
 			longestWord = prefixes[len(prefixes)-1]
 		} else {
-			longestWord = string(s[0])
+			longestWord = sentence[:1]
 		}
 		words = append(words, longestWord)
-		s = s[utf8.RuneCountInString(longestWord):]
+		sentence = sentence[len(longestWord):]
 	}
 	return
 }
@@ -103,10 +101,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	for i, s := range segment(d, string(unsegmentedText)) {
+	for i, s := range segment(d, bytes.Runes(unsegmentedText)) {
 		if i > 0 {
 			outFile.Write([]byte{' '})
 		}
-		outFile.WriteString(s)
+		outFile.WriteString(string(s))
 	}
 }
