@@ -28,73 +28,7 @@ func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
 	return
 }
 
-func loadCEDICT(filename string) (map[string][]string, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	r, err := gzip.NewReader(f)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Close()
-	br := bufio.NewReader(r)
-	dict := make(map[string][]string)
-	for {
-		line, err := br.ReadBytes('\n')
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if line[0] == '#' {
-			continue
-		}
-		hanzi := string(bytes.Fields(line)[1])
-		meaning := string(bytes.TrimSpace(line[bytes.IndexByte(line, '/'):]))
-		dict[hanzi] = append(dict[hanzi], meaning)
-		if err == io.EOF {
-			break
-		}
-	}
-	return dict, nil
-}
-
-func loadCEDICT2(filename string) (dict map[string][]string, err error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	r, err := gzip.NewReader(f)
-	if err != nil {
-		return
-	}
-	defer r.Close()
-	br := bufio.NewReader(r)
-	dict = make(map[string][]string)
-	for {
-		line, err := br.ReadBytes('\n')
-		if err != nil && err != io.EOF {
-			return nil, err
-		}
-		if line[0] == '#' {
-			continue
-		}
-		parts := bytes.SplitN(line, []byte{' '}, 3)
-		if len(parts) != 3 {
-			return nil, fmt.Errorf("line not in CEDICT format: %q", line)
-		}
-		hanzi := string(parts[1])
-		meaning := string(bytes.TrimSpace(line[bytes.IndexByte(line, '/'):]))
-		dict[hanzi] = append(dict[hanzi], meaning)
-		if err == io.EOF {
-			break
-		}
-	}
-	return
-}
-
-func loadCEDICT3(filename string) (dict map[string][]string, err error) {
+func loadCEDICT(filename string) (dict map[string][]string, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
