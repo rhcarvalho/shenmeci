@@ -14,16 +14,21 @@ import (
 )
 
 func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
-	var longestWord []rune
+	var nextWord []rune
 	for len(sentence) > 0 {
-		prefixes := d.Prefixes(sentence)
-		if len(prefixes) > 0 {
-			longestWord = prefixes[len(prefixes)-1]
-		} else {
-			longestWord = sentence[:1]
-		}
-		words = append(words, longestWord)
-		sentence = sentence[len(longestWord):]
+		nextWord = longestPrefixWord(d, sentence)
+		words = append(words, nextWord)
+		sentence = sentence[len(nextWord):]
+	}
+	return
+}
+
+func longestPrefixWord(d *dawg.DAWG, sentence []rune) (word []rune) {
+	prefixes := d.Prefixes(sentence)
+	if len(prefixes) > 0 {
+		word = prefixes[len(prefixes)-1]
+	} else {
+		word = sentence[:1]
 	}
 	return
 }
