@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
+	"log"
 	"os"
 	"path"
 	"runtime"
@@ -74,7 +75,7 @@ func main() {
 	filename := pathRelativeToExecutable("dict/cedict_1_0_ts_utf-8_mdbg.txt.gz")
 	dict, err := loadCEDICT(filename)
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	d = dawg.New(nil)
