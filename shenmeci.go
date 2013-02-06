@@ -28,7 +28,12 @@ func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
 	return
 }
 
-func loadCEDICT(filename string) (dict map[string][]string, err error) {
+type CEDICT struct {
+	Dict      map[string][]string
+	MaxKeyLen int
+}
+
+func loadCEDICT(filename string) (c *CEDICT, err error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return
@@ -40,7 +45,7 @@ func loadCEDICT(filename string) (dict map[string][]string, err error) {
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)
-	dict = make(map[string][]string)
+	c = &CEDICT{Dict: make(map[string][]string)}
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -49,13 +54,20 @@ func loadCEDICT(filename string) (dict map[string][]string, err error) {
 		if line[0] == '#' {
 			continue
 		}
+		// The basic format of a CC-CEDICT entry is:
+		//   Traditional Simplified [pin1 yin1] /English equivalent 1/equivalent 2/
+		// For example:
+		//   中國 中国 [Zhong1 guo2] /China/Middle Kingdom/
 		parts := bytes.SplitN(line, []byte{' '}, 3)
 		if len(parts) != 3 {
 			return nil, fmt.Errorf("line not in CEDICT format: %q", line)
 		}
-		hanzi := string(parts[1])
+		wordSimplified := string(parts[1])
 		meaning := string(bytes.TrimSpace(parts[2][bytes.IndexByte(parts[2], '/'):]))
-		dict[hanzi] = append(dict[hanzi], meaning)
+		c.Dict[wordSimplified] = append(c.Dict[wordSimplified], meaning)
+		if wordLen := len([]rune(wordSimplified)); wordLen > c.MaxKeyLen {
+			c.MaxKeyLen = wordLen
+		}
 		if err == io.EOF {
 			break
 		}
@@ -94,12 +106,12 @@ func main() {
 		}
 		defer outFile.Close()
 	}
-	dict, err := loadCEDICT(*cedictPath)
+	cedict, err := loadCEDICT(*cedictPath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	d := dawg.New(nil)
-	for k := range dict {
+	for k := range cedict.Dict {
 		d.Insert(k)
 	}
 	unsegmentedText, err := ioutil.ReadAll(inFile)
