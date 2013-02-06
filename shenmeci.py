@@ -145,4 +145,7 @@ if __name__ == '__main__':
         ChineseWordSegmenter = DAWGWordSegmenter(vocabulary=new_words)
 
     words = ChineseWordSegmenter.segment(args.infile.read())
-    args.outfile.write(u" ".join(words))
+    for i, word in enumerate(words):
+        if i > 0:
+            args.outfile.write(u" ")
+        args.outfile.write(word)
