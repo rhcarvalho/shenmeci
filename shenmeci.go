@@ -69,16 +69,13 @@ func pathRelativeToExecutable(p string) string {
 }
 
 func main() {
-	d := dawg.New([]string{"go", "python", "ruby", "c", "cpp"})
-	fmt.Println(segment(d, "golangpythoncpp"))
-
 	filename := pathRelativeToExecutable("dict/cedict_1_0_ts_utf-8_mdbg.txt.gz")
 	dict, err := loadCEDICT(filename)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	d = dawg.New(nil)
+	d := dawg.New(nil)
 	for k := range dict {
 		d.Insert(k)
 	}
