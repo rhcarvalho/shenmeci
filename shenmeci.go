@@ -69,7 +69,7 @@ func main() {
 	}
 	dict, err := loadCEDICT(*cedictPath)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 	d := dawg.New(nil)
 	for k := range dict {
