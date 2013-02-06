@@ -28,6 +28,23 @@ func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
 	return
 }
 
+func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
+	unsegmentedText, err := ioutil.ReadAll(r)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for i, s := range segment(d, bytes.Runes(unsegmentedText)) {
+		// Do not print carriage returns
+		if len(s) == 1 && s[0] == '\r' {
+			continue
+		}
+		if i > 0 {
+			outFile.Write([]byte{' '})
+		}
+		w.Write([]byte(string(s)))
+	}
+}
+
 type CEDICT struct {
 	Dict      map[string][]string
 	MaxKeyLen int
@@ -114,18 +131,5 @@ func main() {
 	for k := range cedict.Dict {
 		d.Insert(k)
 	}
-	unsegmentedText, err := ioutil.ReadAll(inFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for i, s := range segment(d, bytes.Runes(unsegmentedText)) {
-		// Do not print carriage returns
-		if len(s) == 1 && s[0] == '\r' {
-			continue
-		}
-		if i > 0 {
-			outFile.Write([]byte{' '})
-		}
-		outFile.WriteString(string(s))
-	}
+	fSegment(d, inFile, outFile)
 }
