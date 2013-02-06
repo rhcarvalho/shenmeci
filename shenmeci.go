@@ -102,6 +102,10 @@ func main() {
 		log.Fatal(err)
 	}
 	for i, s := range segment(d, bytes.Runes(unsegmentedText)) {
+		// Do not print carriage returns
+		if len(s) == 1 && s[0] == '\r' {
+			continue
+		}
 		if i > 0 {
 			outFile.Write([]byte{' '})
 		}
