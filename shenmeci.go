@@ -4,13 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"flag"
 	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
 	"log"
 	"os"
-	"path"
-	"runtime"
 	"unicode/utf8"
 )
 
@@ -61,20 +60,17 @@ func loadCEDICT(filename string) (map[string][]string, error) {
 	return dict, nil
 }
 
-// pathRelativeToExecutable returns an absolute path relative to
-// this executable's directory.
-func pathRelativeToExecutable(p string) string {
-	_, filename, _, _ := runtime.Caller(0)
-	return path.Join(path.Dir(filename), p)
-}
+var cedictPath = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
 
 func main() {
-	filename := pathRelativeToExecutable("dict/cedict_1_0_ts_utf-8_mdbg.txt.gz")
-	dict, err := loadCEDICT(filename)
+	flag.Parse()
+	if *cedictPath == "" {
+		log.Fatal("Missing environment variable CEDICT or command-line argument -dict.")
+	}
+	dict, err := loadCEDICT(*cedictPath)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
 	d := dawg.New(nil)
 	for k := range dict {
 		d.Insert(k)
