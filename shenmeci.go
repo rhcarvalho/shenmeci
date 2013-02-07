@@ -4,13 +4,16 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
+	"strings"
 )
 
 func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {
@@ -48,6 +51,21 @@ func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
 		}
 		w.Write([]byte(string(s)))
 	}
+}
+
+func segmentHandler(w http.ResponseWriter, r *http.Request) {
+	query := r.FormValue("q")
+	var words []interface{}
+	for _, word := range segment(cedict.Dawg, []rune(query)) {
+		z := string(word)
+		m, ok := cedict.Dict[z]
+		if !ok {
+			m = []string{"?"}
+		}
+		words = append(words, map[string]interface{}{"z": z, "m": strings.Join(m, "/")})
+	}
+	b, _ := json.Marshal(map[string]interface{}{"r": words})
+	w.Write(b)
 }
 
 type CEDICT struct {
@@ -108,6 +126,8 @@ var (
 	err             error
 )
 
+var httpAddr = flag.String("http", "", "http service address (e.g. localhost:8080)")
+
 func main() {
 	flag.Parse()
 	if *cedictPath == "" {
@@ -117,6 +137,16 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Run in HTTP Server mode
+	if *httpAddr != "" {
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./static/index.html")
+		})
+		http.Handle("/static/", http.FileServer(http.Dir(".")))
+		http.HandleFunc("/segment", segmentHandler)
+		log.Fatal(http.ListenAndServe(*httpAddr, nil))
+	}
+	// Run in command-line segmenter mode
 	if *inFilePath == "" {
 		inFile = os.Stdin
 	} else {
