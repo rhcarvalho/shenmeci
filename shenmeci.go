@@ -52,6 +52,7 @@ func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
 
 type CEDICT struct {
 	Dict      map[string][]string
+	Dawg      *dawg.DAWG
 	MaxKeyLen int
 }
 
@@ -67,7 +68,7 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)
-	c = &CEDICT{Dict: make(map[string][]string)}
+	c = &CEDICT{Dict: make(map[string][]string), Dawg: dawg.New(nil)}
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -87,6 +88,7 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 		wordSimplified := string(parts[1])
 		meaning := string(bytes.TrimSpace(parts[2][bytes.IndexByte(parts[2], '/'):]))
 		c.Dict[wordSimplified] = append(c.Dict[wordSimplified], meaning)
+		c.Dawg.Insert(wordSimplified)
 		if wordLen := len([]rune(wordSimplified)); wordLen > c.MaxKeyLen {
 			c.MaxKeyLen = wordLen
 		}
@@ -99,6 +101,7 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 
 var (
 	cedictPath      = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
+	cedict          *CEDICT
 	inFilePath      = flag.String("infile", "", "from where to read unsegmented text (defaults to stdin)")
 	outFilePath     = flag.String("outfile", "", "where to write text segmented into words (defaults to stdout)")
 	inFile, outFile *os.File
@@ -109,6 +112,10 @@ func main() {
 	flag.Parse()
 	if *cedictPath == "" {
 		log.Fatal("Missing environment variable CEDICT or command-line argument -dict.")
+	}
+	cedict, err = loadCEDICT(*cedictPath)
+	if err != nil {
+		log.Fatal(err)
 	}
 	if *inFilePath == "" {
 		inFile = os.Stdin
@@ -128,13 +135,5 @@ func main() {
 		}
 		defer outFile.Close()
 	}
-	cedict, err := loadCEDICT(*cedictPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	d := dawg.New(nil)
-	for k := range cedict.Dict {
-		d.Insert(k)
-	}
-	fSegment(d, inFile, outFile)
+	fSegment(cedict.Dawg, inFile, outFile)
 }
