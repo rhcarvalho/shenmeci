@@ -44,7 +44,7 @@ func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
 			continue
 		}
 		if i > 0 {
-			outFile.Write([]byte{' '})
+			w.Write([]byte{' '})
 		}
 		w.Write([]byte(string(s)))
 	}
