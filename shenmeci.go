@@ -55,7 +55,9 @@ func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("q")
-	var words []interface{}
+	// words is initialized to make sure its JSON representation is at
+	// least an empty list and not null
+	words := []interface{}{}
 	for _, word := range segment(cedict.Dawg, []rune(query)) {
 		z := string(word)
 		m, ok := cedict.Dict[z]
