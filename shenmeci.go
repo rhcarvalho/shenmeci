@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -34,23 +33,6 @@ func longestPrefixWord(d *dawg.DAWG, sentence []rune) (word []rune) {
 		word = sentence[:1]
 	}
 	return
-}
-
-func fSegment(d *dawg.DAWG, r io.Reader, w io.Writer) {
-	unsegmentedText, err := ioutil.ReadAll(r)
-	if err != nil {
-		log.Fatal(err)
-	}
-	for i, s := range segment(d, bytes.Runes(unsegmentedText)) {
-		// Do not print carriage returns
-		if len(s) == 1 && s[0] == '\r' {
-			continue
-		}
-		if i > 0 {
-			w.Write([]byte{' '})
-		}
-		w.Write([]byte(string(s)))
-	}
 }
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,9 +104,6 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 var (
 	cedictPath      = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
 	cedict          *CEDICT
-	inFilePath      = flag.String("infile", "", "from where to read unsegmented text (defaults to stdin)")
-	outFilePath     = flag.String("outfile", "", "where to write text segmented into words (defaults to stdout)")
-	inFile, outFile *os.File
 	err             error
 )
 
@@ -148,24 +127,4 @@ func main() {
 		http.HandleFunc("/segment", segmentHandler)
 		log.Fatal(http.ListenAndServe(*httpAddr, nil))
 	}
-	// Run in command-line segmenter mode
-	if *inFilePath == "" {
-		inFile = os.Stdin
-	} else {
-		inFile, err = os.Open(*inFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer inFile.Close()
-	}
-	if *outFilePath == "" {
-		outFile = os.Stdout
-	} else {
-		outFile, err = os.Create(*outFilePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer outFile.Close()
-	}
-	fSegment(cedict.Dawg, inFile, outFile)
 }

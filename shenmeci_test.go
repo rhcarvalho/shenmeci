@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bytes"
 	"github.com/rhcarvalho/DAWGo/dawg"
-	"os"
-	"strings"
 	"testing"
 )
 
@@ -31,20 +28,6 @@ func TestSegment(t *testing.T) {
 	}
 }
 
-func TestFSegment(t *testing.T) {
-	d, err := newDAWGFromCEDICT()
-	if err != nil {
-		t.Fatal(err)
-	}
-	sentence := "语言信息处理"
-	expectedOutput := "语言 信息 处理"
-	r, w := strings.NewReader(sentence), new(bytes.Buffer)
-	fSegment(d, r, w)
-	if output := w.String(); output != expectedOutput {
-		t.Errorf("segmented %q should be %q, got %q", sentence, expectedOutput, output)
-	}
-}
-
 func BenchmarkLoadCEDICT(b *testing.B) {
 	var err error
 	for i := 0; i < b.N; i++ {
@@ -64,23 +47,6 @@ func BenchmarkSegment(b *testing.B) {
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		segment(d, sentence)
-	}
-}
-
-func BenchmarkFSegment(b *testing.B) {
-	b.StopTimer()
-	d, err := newDAWGFromCEDICT()
-	if err != nil {
-		b.Fatal(err)
-	}
-	in, err := os.Open("icwb2-data/testing/msr_test.utf8")
-	if err != nil {
-		b.Fatal(err)
-	}
-	out := new(bytes.Buffer)
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		fSegment(d, in, out)
 	}
 }
 
