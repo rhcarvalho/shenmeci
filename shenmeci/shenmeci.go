@@ -1,11 +1,10 @@
-package main
+package shenmeci
 
 import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
@@ -102,29 +101,15 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 }
 
 var (
-	cedictPath      = flag.String("dict", os.Getenv("CEDICT"), "path to CEDICT")
-	cedict          *CEDICT
-	err             error
+	cedictPath = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
+	cedict     *CEDICT
+	err        error
 )
 
-var httpAddr = flag.String("http", "", "http service address (e.g. localhost:8080)")
-
-func main() {
-	flag.Parse()
-	if *cedictPath == "" {
-		log.Fatal("Missing environment variable CEDICT or command-line argument -dict.")
-	}
-	cedict, err = loadCEDICT(*cedictPath)
+func init() {
+	cedict, err = loadCEDICT(cedictPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Run in HTTP Server mode
-	if *httpAddr != "" {
-		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "./static/index.html")
-		})
-		http.Handle("/static/", http.FileServer(http.Dir(".")))
-		http.HandleFunc("/segment", segmentHandler)
-		log.Fatal(http.ListenAndServe(*httpAddr, nil))
-	}
+	http.HandleFunc("/segment", segmentHandler)
 }
