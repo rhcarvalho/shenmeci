@@ -2,6 +2,7 @@ package shenmeci
 
 import (
 	"github.com/rhcarvalho/DAWGo/dawg"
+	"os"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestSegment(t *testing.T) {
 func BenchmarkLoadCEDICT(b *testing.B) {
 	var err error
 	for i := 0; i < b.N; i++ {
-		if _, err = loadCEDICT("dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"); err != nil {
+		if _, err = loadCEDICT(os.Getenv("CEDICT")); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -51,7 +52,7 @@ func BenchmarkSegment(b *testing.B) {
 }
 
 func newDAWGFromCEDICT() (d *dawg.DAWG, err error) {
-	cedict, err := loadCEDICT("dict/cedict_1_0_ts_utf-8_mdbg.txt.gz")
+	cedict, err := loadCEDICT(os.Getenv("CEDICT"))
 	if err != nil {
 		return nil, err
 	}

@@ -101,12 +101,25 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 }
 
 var (
-	cedictPath = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
+	cedictPath = os.Getenv("CEDICT")
 	cedict     *CEDICT
 	err        error
 )
 
 func init() {
+	if cedictPath == "" {
+		// if the environment variable is not set, try a default path
+		cedictPath = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
+		if _, err := os.Stat(cedictPath); err != nil {
+			if os.IsNotExist(err) {
+				// file does not exist
+				log.Fatal("Missing environment variable CEDICT.")
+			} else {
+				// other error
+				log.Fatal(err)
+			}
+		}
+	}
 	cedict, err = loadCEDICT(cedictPath)
 	if err != nil {
 		log.Fatal(err)
