@@ -1,4 +1,4 @@
-package shenmeci
+package main
 
 import (
 	"bufio"
@@ -106,7 +106,7 @@ var (
 	err        error
 )
 
-func init() {
+func main() {
 	if cedictPath == "" {
 		// if the environment variable is not set, try a default path
 		cedictPath = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
@@ -124,5 +124,13 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/index.html")
+	})
+	http.Handle("/static/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/segment", segmentHandler)
+	err = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }

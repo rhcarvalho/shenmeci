@@ -1,4 +1,4 @@
-package shenmeci
+package main
 
 import (
 	"github.com/rhcarvalho/DAWGo/dawg"
