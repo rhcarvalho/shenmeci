@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -112,8 +113,13 @@ func main() {
 		cedictPath = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
 		if _, err := os.Stat(cedictPath); err != nil {
 			if os.IsNotExist(err) {
-				// file does not exist
-				log.Fatal("Missing environment variable CEDICT.")
+				// try to download
+				cmd := exec.Command("./download_dict.sh")
+				err = cmd.Run()
+				if err != nil {
+					// file does not exist and could not be downloaded
+					log.Fatal("Missing environment variable CEDICT.")
+				}
 			} else {
 				// other error
 				log.Fatal(err)
