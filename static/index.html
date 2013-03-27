@@ -132,7 +132,7 @@
     <script src="/static/js/bootstrap-typeahead.js"></script>
     <script src="/static/js/spin.js"></script>
     <script>
-      $('#search').submit(function() {
+      var translate = function() {
         // change to the dictionary tab
         $('.navbar .nav li a:first').trigger('click');
         var q = $('#q').val();
@@ -179,6 +179,21 @@
           $('#results table').removeClass('hide');
         });
         return false;
+      };
+
+      var getURLParameter = function (key) {
+        var regexp = new RegExp('[?|&]' + key + '=' + '([^&;]+?)(&|#|;|$)');
+        var value = (regexp.exec(location.search) || [, ""])[1];
+        return decodeURIComponent(value.replace(/\+/g, '%20')) || null;
+      };
+
+      // Automatically fill the form and submit when the query parameter is in the URL.
+      $(function () {
+        var q = getURLParameter("q");
+        if (q) {
+          $('#q').val(q);
+          translate();
+        }
       });
     </script>
 
