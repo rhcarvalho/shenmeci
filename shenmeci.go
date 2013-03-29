@@ -30,7 +30,18 @@ func longestPrefixWord(d *dawg.DAWG, sentence []rune) (word []rune) {
 	if len(prefixes) > 0 {
 		word = prefixes[len(prefixes)-1]
 	} else {
-		word = sentence[:1]
+		// In this case, there is no word in the dictionary that is a
+		// prefix of the sentence, so we take the longest non-prefix
+		// portion of the sentence as the longest prefix.
+		// This means that unknown terms are not segmented.
+		for len(sentence) > 0 {
+			prefixes := d.Prefixes(sentence)
+			if len(prefixes) > 0 {
+				break
+			}
+			word = append(word, sentence[0])
+			sentence = sentence[1:]
+		}
 	}
 	return
 }
