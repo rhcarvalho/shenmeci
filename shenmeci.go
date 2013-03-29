@@ -36,24 +36,38 @@ func longestPrefixWord(d *dawg.DAWG, sentence []rune) (word []rune) {
 }
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
+	var m, p []string
 	query := r.FormValue("q")
 	// words is initialized to make sure its JSON representation is at
 	// least an empty list and not null
 	words := []interface{}{}
 	for _, word := range segment(cedict.Dawg, []rune(query)) {
 		z := string(word)
-		m, ok := cedict.Dict[z]
-		if !ok {
+		entry, ok := cedict.Dict[z]
+		if ok {
+			m = entry.definitions
+			p = entry.pinyin
+		} else {
 			m = []string{"?"}
+			p = []string{""}
 		}
-		words = append(words, map[string]interface{}{"z": z, "m": strings.Join(m, "/")})
+		words = append(words, map[string]string{
+			"z": z,
+			"m": strings.Join(m, "/"),
+			"p": strings.Join(p, "/"),
+		})
 	}
 	b, _ := json.Marshal(map[string]interface{}{"r": words})
 	w.Write(b)
 }
 
+type CEDICTEntry struct {
+	definitions []string
+	pinyin      []string
+}
+
 type CEDICT struct {
-	Dict      map[string][]string
+	Dict      map[string]CEDICTEntry
 	Dawg      *dawg.DAWG
 	MaxKeyLen int
 }
@@ -70,7 +84,7 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)
-	c = &CEDICT{Dict: make(map[string][]string), Dawg: dawg.New(nil)}
+	c = &CEDICT{Dict: make(map[string]CEDICTEntry), Dawg: dawg.New(nil)}
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -89,7 +103,11 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 		}
 		wordSimplified := string(parts[1])
 		meaning := string(bytes.TrimSpace(parts[2][bytes.IndexByte(parts[2], '/'):]))
-		c.Dict[wordSimplified] = append(c.Dict[wordSimplified], meaning)
+		pinyin := string(parts[2][bytes.IndexByte(parts[2], '[')+1 : bytes.IndexByte(parts[2], ']')])
+		entry := c.Dict[wordSimplified]
+		entry.definitions = append(entry.definitions, meaning)
+		entry.pinyin = append(entry.pinyin, pinyin)
+		c.Dict[wordSimplified] = entry
 		c.Dawg.Insert(wordSimplified)
 		if wordLen := len([]rune(wordSimplified)); wordLen > c.MaxKeyLen {
 			c.MaxKeyLen = wordLen

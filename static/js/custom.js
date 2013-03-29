@@ -31,7 +31,7 @@ var translate = function() {
     var items = [];
     $.each(data.r, function(idx, item) {
       items.push('<tr><td style="white-space: nowrap;">' + item['z'] +
-                 '</td><td><ol><li>' +
+                 '</td><td>' + item['p'] + '</td><td><ol><li>' +
                  item['m'].split('/').filter(Boolean).join('</li><li>') +
                  '</li></ol></td></tr>');
     });
