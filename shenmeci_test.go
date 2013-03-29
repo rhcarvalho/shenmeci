@@ -13,7 +13,7 @@ func TestSegmentChinese(t *testing.T) {
 		[]rune("信息"),
 		[]rune("处理"),
 	}
-	testSegment(sentence,  expectedWords, t)
+	testSegment(sentence, expectedWords, t)
 }
 
 func TestNonChinese(t *testing.T) {
@@ -21,7 +21,7 @@ func TestNonChinese(t *testing.T) {
 	expectedWords := [][]rune{
 		[]rune("I am a sentence in English."),
 	}
-	testSegment(sentence,  expectedWords, t)
+	testSegment(sentence, expectedWords, t)
 }
 
 func TestEnglishChinese(t *testing.T) {
@@ -31,7 +31,7 @@ func TestEnglishChinese(t *testing.T) {
 		[]rune("世界"),
 		[]rune("."),
 	}
-	testSegment(sentence,  expectedWords, t)
+	testSegment(sentence, expectedWords, t)
 }
 
 func testSegment(sentence string, expectedWords [][]rune, t *testing.T) {
