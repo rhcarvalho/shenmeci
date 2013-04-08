@@ -173,6 +173,11 @@ func pinyinNumberedSyllableToUnicode(pinyin string) string {
 				pinyin = strings.Replace(pinyin, "u", string(u[tone-1]), 1)
 			}
 		}
+		// Make sure there is no "u:" left.
+		// Example: "lu:e4" => "lüè".
+		if strings.Contains(pinyin, "u:") {
+			pinyin = strings.Replace(pinyin, "u:", "ü", 1)
+		}
 	}
 	return pinyin
 }
