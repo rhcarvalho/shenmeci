@@ -8,14 +8,29 @@ import (
 )
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
-	var m, p []string
 	query := r.FormValue("q")
-	// words is initialized to make sure its JSON representation is at
-	// least an empty list and not null
-	words := []interface{}{}
-	for _, word := range segment(cedict.Dawg, []rune(query)) {
-		z := string(word)
-		entry, ok := cedict.Dict[z]
+	results := keysToResults(func() (keys []string) {
+		for _, key := range segment(cedict.Dawg, []rune(query)) {
+			keys = append(keys, string(key))
+		}
+		return keys
+	}())
+	if len(results) == 1 && results[0]["m"] == "?" {
+		log.Printf("q='%v' triggers Full-Text Search", query)
+		results = keysToResults(searchDB(db, query))
+	}
+	if results == nil {
+		log.Printf("q='%v' returns no results", query)
+		results = []map[string]string{}
+	}
+	b, _ := json.Marshal(map[string]interface{}{"r": results})
+	w.Write(b)
+}
+
+func keysToResults(keys []string) (results []map[string]string) {
+	var m, p []string
+	for _, key := range keys {
+		entry, ok := cedict.Dict[key]
 		if ok {
 			m = entry.definitions
 			p = entry.pinyin
@@ -23,14 +38,13 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 			m = []string{"?"}
 			p = []string{""}
 		}
-		words = append(words, map[string]string{
-			"z": z,
+		results = append(results, map[string]string{
+			"z": key,
 			"m": strings.Join(m, "/"),
 			"p": strings.Join(p, "/"),
 		})
 	}
-	b, _ := json.Marshal(map[string]interface{}{"r": words})
-	w.Write(b)
+	return results
 }
 
 func serve(host, port string) {

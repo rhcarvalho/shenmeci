@@ -1,16 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"os"
 )
 
-var cedict *CEDICT
+var (
+	cedict *CEDICT
+	db     *sql.DB
+)
 
 func main() {
 	var err error
 	cedictPath := os.Getenv("CEDICT")
 	cedict, err = loadCEDICT(cedictPath)
+	db = createDB(cedict.Dict)
+	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
