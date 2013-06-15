@@ -54,6 +54,7 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 	defer r.Close()
 	br := bufio.NewReader(r)
 	c = &CEDICT{Dict: make(map[string]CEDICTEntry), Dawg: dawg.New(nil)}
+	log.Println("loading CEDICT into dict/DAWG...")
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -85,5 +86,6 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 			break
 		}
 	}
+	log.Printf("loaded %v entries\n", len(c.Dict))
 	return
 }
