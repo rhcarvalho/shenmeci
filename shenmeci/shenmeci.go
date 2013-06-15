@@ -2,28 +2,17 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 )
 
-var (
-	cedictPath = os.Getenv("CEDICT")
-	cedict     *CEDICT
-	err        error
-)
+var cedict *CEDICT
 
 func main() {
+	var err error
+	cedictPath := os.Getenv("CEDICT")
 	cedict, err = loadCEDICT(cedictPath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/index.html")
-	})
-	http.Handle("/static/", http.FileServer(http.Dir(".")))
-	http.HandleFunc("/segment", segmentHandler)
-	err = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	serve("127.0.0.1", os.Getenv("PORT"))
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -30,4 +31,16 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	b, _ := json.Marshal(map[string]interface{}{"r": words})
 	w.Write(b)
+}
+
+func serve(host, port string) {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/index.html")
+	})
+	http.Handle("/static/", http.FileServer(http.Dir(".")))
+	http.HandleFunc("/segment", segmentHandler)
+	err := http.ListenAndServe(host+":"+port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
