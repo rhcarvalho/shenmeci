@@ -26,6 +26,9 @@ Development/deployment dependencies
 * Go
 * MongoDB
 * SQLite with FTS support
+* mgo
+* go-sqlite3
+* DAWGo
 
 
 Running
