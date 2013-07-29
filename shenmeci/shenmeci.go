@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 )
 
 var (
@@ -20,6 +21,9 @@ func main() {
 	// If the Host:Port is already in use, we can exit before wasting more resources.
 	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.Http.Host, config.Http.Port))
 	if err != nil {
+		if err.(*net.OpError).Err.Error() == "address already in use" {
+			os.Exit(0)
+		}
 		log.Fatal(err)
 	}
 	ln.Close()
