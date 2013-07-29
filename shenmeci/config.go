@@ -28,15 +28,15 @@ func loadConfig() {
 	flag.Parse()
 	file, err := os.Open(*configFile)
 	if err != nil {
-		log.Fatal(err)
+		logFatalAndExampleConfig(err)
 	}
 	dec := json.NewDecoder(file)
 	err = dec.Decode(&config)
 	if err == io.EOF {
-		log.Fatal("empty configuration file")
+		logFatalAndExampleConfig(fmt.Sprint("empty configuration file: ", *configFile))
 	}
 	if err != nil {
-		log.Fatal("invalid configuration file: ", err)
+		logFatalAndExampleConfig(fmt.Sprintf("the configuration file '%s' is invalid: %v", *configFile, err))
 	}
 }
 
@@ -55,18 +55,15 @@ func validateConfig() {
 	if len(config.CedictPath) == 0 {
 		errors = append(errors, "missing CedictPath configuration")
 	} else if _, err := os.Stat(config.CedictPath); err != nil {
-		errors = append(errors, "invalid CedictPath configuration: ", err)
+		errors = append(errors, fmt.Sprint("invalid CedictPath configuration: ", err))
 	}
 	if len(config.MongoURL) == 0 {
 		errors = append(errors, "missing MongoURL configuration")
 	}
 	if len(errors) > 0 {
-		log.Printf("the configuration file '%s' is invalid\n", *configFile)
-		for _, error := range errors {
-			log.Println(error)
-		}
-		fmt.Printf("Example config.json:\n\n%s\n", exampleConfig())
-		os.Exit(1)
+		errors = append([]interface{}{fmt.Sprintf("the configuration file '%s' is invalid", *configFile)},
+			errors...)
+		logFatalAndExampleConfig(errors...)
 	}
 }
 
@@ -76,4 +73,12 @@ func exampleConfig() []byte {
 			"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
 			"localhost:27017"}, "", "  ")
 	return b
+}
+
+func logFatalAndExampleConfig(error ...interface{}) {
+	for _, err := range error {
+		log.Println(err)
+	}
+	fmt.Printf("Example config.json:\n\n%s\n", exampleConfig())
+	os.Exit(1)
 }
