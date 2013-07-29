@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
+	"net"
 )
 
 var (
@@ -13,7 +15,15 @@ var (
 func main() {
 	loadConfig()
 	validateConfig()
-	var err error
+
+	// Test whether we can listen on the provided Host and Port.
+	// If the Host:Port is already in use, we can exit before wasting more resources.
+	ln, err := net.Listen("tcp", fmt.Sprintf("%s:%d", config.Http.Host, config.Http.Port))
+	if err != nil {
+		log.Fatal(err)
+	}
+	ln.Close()
+
 	cedict, err = loadCEDICT(config.CedictPath)
 	if err != nil {
 		log.Fatal(err)
