@@ -7,6 +7,7 @@ import (
 	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 )
@@ -80,9 +81,9 @@ func serve(host string, port int) {
 	collection = session.DB("shenmeci").C("queries")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/index.html")
+		http.ServeFile(w, r, path.Join(config.StaticPath, "index.html"))
 	})
-	http.Handle("/static/", http.FileServer(http.Dir(".")))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
 	http.HandleFunc("/segment", segmentHandler)
 	log.Printf("Serving on PORT=%v", port)
 	err = http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
