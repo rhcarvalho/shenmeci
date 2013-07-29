@@ -1,3 +1,4 @@
 *.pyc
 dict/*
 icwb2-data/*
+config.json

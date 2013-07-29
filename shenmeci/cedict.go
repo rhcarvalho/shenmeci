@@ -9,7 +9,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 )
 
 type CEDICTEntry struct {
@@ -24,32 +23,14 @@ type CEDICT struct {
 }
 
 func loadCEDICT(filename string) (c *CEDICT, err error) {
-	if filename == "" {
-		// if not set, try a default path
-		filename = "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
-		if _, err := os.Stat(filename); err != nil {
-			if os.IsNotExist(err) {
-				// try to download
-				cmd := exec.Command("./download_dict.sh")
-				err = cmd.Run()
-				if err != nil {
-					// file does not exist and could not be downloaded
-					log.Fatal("Missing environment variable CEDICT.")
-				}
-			} else {
-				// other error
-				log.Fatal(err)
-			}
-		}
-	}
 	f, err := os.Open(filename)
 	if err != nil {
-		return
+		log.Fatal("CEDICT: ", err)
 	}
 	defer f.Close()
 	r, err := gzip.NewReader(f)
 	if err != nil {
-		return
+		log.Fatal("CEDICT: ", err)
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)

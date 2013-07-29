@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
@@ -66,8 +67,8 @@ func keysToResults(keys []string) (results []map[string]string) {
 
 var collection *mgo.Collection
 
-func serve(host, port string) {
-	session, err := mgo.Dial("localhost")
+func serve(host string, port int) {
+	session, err := mgo.Dial(config.MongoURL)
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +85,7 @@ func serve(host, port string) {
 	http.Handle("/static/", http.FileServer(http.Dir(".")))
 	http.HandleFunc("/segment", segmentHandler)
 	log.Printf("Serving on PORT=%v", port)
-	err = http.ListenAndServe(host+":"+port, nil)
+	err = http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
