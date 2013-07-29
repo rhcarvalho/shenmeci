@@ -15,10 +15,10 @@ func main() {
 	validateConfig()
 	var err error
 	cedict, err = loadCEDICT(config.CedictPath)
-	db = createDB(cedict.Dict)
-	defer db.Close()
 	if err != nil {
 		log.Fatal(err)
 	}
+	db = createDB(cedict.Dict)
+	defer db.Close()
 	serve(config.Http.Host, config.Http.Port)
 }
