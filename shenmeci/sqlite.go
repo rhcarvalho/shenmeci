@@ -7,7 +7,9 @@ import (
 	"path"
 )
 
-func loadDB(dict map[string]CEDICTEntry) *sql.DB {
+var db *sql.DB
+
+func loadDB() {
 	db, err := sql.Open("sqlite3", path.Join(path.Dir(config.CedictPath), "shenmeci.sqlite"))
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +25,6 @@ func loadDB(dict map[string]CEDICTEntry) *sql.DB {
 		_, err = db.Exec(sql)
 		if err != nil {
 			log.Fatalf("%q: %s\n", err, sql)
-			return db
 		}
 	}
 	var hasTable bool
@@ -35,12 +36,11 @@ func loadDB(dict map[string]CEDICTEntry) *sql.DB {
 		log.Println("found FTS index")
 	} else {
 		log.Println("creating FTS index...")
-		populateDB(db, dict)
+		populateDB()
 	}
-	return db
 }
 
-func populateDB(db *sql.DB, dict map[string]CEDICTEntry) {
+func populateDB() {
 	_, err := db.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
 	if err != nil {
 		log.Fatal(err)
@@ -50,6 +50,7 @@ func populateDB(db *sql.DB, dict map[string]CEDICTEntry) {
 		log.Fatal(err)
 	}
 	defer insertStmt.Close()
+	dict := cedict.Dict
 	for key, entry := range dict {
 		for _, definition := range entry.definitions {
 			insertStmt.Exec(key, definition)

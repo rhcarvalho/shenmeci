@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"fmt"
 	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
 	"log"
@@ -22,8 +21,10 @@ type CEDICT struct {
 	MaxKeyLen int
 }
 
-func loadCEDICT(filename string) (c *CEDICT, err error) {
-	f, err := os.Open(filename)
+var cedict *CEDICT
+
+func loadCEDICT() {
+	f, err := os.Open(config.CedictPath)
 	if err != nil {
 		log.Fatal("CEDICT: ", err)
 	}
@@ -34,12 +35,12 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)
-	c = &CEDICT{Dict: make(map[string]CEDICTEntry), Dawg: dawg.New(nil)}
+	cedict = &CEDICT{Dict: make(map[string]CEDICTEntry), Dawg: dawg.New(nil)}
 	log.Println("loading CEDICT into dict/DAWG...")
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
-			return nil, err
+			log.Fatal("CEDICT: ", err)
 		}
 		if line[0] == '#' {
 			continue
@@ -50,23 +51,22 @@ func loadCEDICT(filename string) (c *CEDICT, err error) {
 		//   中國 中国 [Zhong1 guo2] /China/Middle Kingdom/
 		parts := bytes.SplitN(line, []byte{' '}, 3)
 		if len(parts) != 3 {
-			return nil, fmt.Errorf("line not in CEDICT format: %q", line)
+			log.Fatalf("line not in CEDICT format: %q", line)
 		}
 		wordSimplified := string(parts[1])
 		meaning := string(bytes.TrimSpace(parts[2][bytes.IndexByte(parts[2], '/'):]))
 		pinyin := string(parts[2][bytes.IndexByte(parts[2], '[')+1 : bytes.IndexByte(parts[2], ']')])
-		entry := c.Dict[wordSimplified]
+		entry := cedict.Dict[wordSimplified]
 		entry.definitions = append(entry.definitions, meaning)
 		entry.pinyin = append(entry.pinyin, pinyinNumberedToUnicode(pinyin))
-		c.Dict[wordSimplified] = entry
-		c.Dawg.Insert(wordSimplified)
-		if wordLen := len([]rune(wordSimplified)); wordLen > c.MaxKeyLen {
-			c.MaxKeyLen = wordLen
+		cedict.Dict[wordSimplified] = entry
+		cedict.Dawg.Insert(wordSimplified)
+		if wordLen := len([]rune(wordSimplified)); wordLen > cedict.MaxKeyLen {
+			cedict.MaxKeyLen = wordLen
 		}
 		if err == io.EOF {
 			break
 		}
 	}
-	log.Printf("loaded %v entries\n", len(c.Dict))
-	return
+	log.Printf("loaded %v entries\n", len(cedict.Dict))
 }

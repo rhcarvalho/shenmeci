@@ -1,16 +1,10 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"log"
 	"net"
 	"os"
-)
-
-var (
-	cedict *CEDICT
-	db     *sql.DB
 )
 
 func main() {
@@ -28,11 +22,8 @@ func main() {
 	}
 	ln.Close()
 
-	cedict, err = loadCEDICT(config.CedictPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	db = loadDB(cedict.Dict)
+	loadCEDICT()
+	loadDB()
 	defer db.Close()
 	serve(config.Http.Host, config.Http.Port)
 }
