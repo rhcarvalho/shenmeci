@@ -43,7 +43,14 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Insert into MongoDB in another goroutine.
 	// This finishes the response without blocking.
-	go collection.Insert(&QueryRecord{query, results, bson.Now(), duration, r})
+	go func() {
+		err := collection.Insert(&QueryRecord{query, results, bson.Now(), duration, r})
+		// Log and refresh the Session in case of insertion errors
+		if err != nil {
+			log.Print("MongoDB: ", err)
+			collection.Database.Session.Refresh()
+		}
+	}()
 }
 
 func keysToResults(keys []string) (results []map[string]string) {
