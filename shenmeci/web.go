@@ -85,7 +85,7 @@ func serve(host string, port int) {
 	})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
 	http.HandleFunc("/segment", segmentHandler)
-	log.Printf("Serving on PORT=%v", port)
+	log.Printf("serving at %s:%d", host, port)
 	err = http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
 	if err != nil {
 		log.Fatal(err)
