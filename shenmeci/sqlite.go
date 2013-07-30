@@ -14,6 +14,14 @@ func loadDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var sqliteVersion string
+	err = db.QueryRow("select sqlite_version()").Scan(&sqliteVersion)
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("SQLite version:", sqliteVersion)
+
 	sqls := []string{
 		"PRAGMA page_size = 4096",
 		"PRAGMA synchronous = OFF",
