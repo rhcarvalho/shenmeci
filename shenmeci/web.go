@@ -71,7 +71,7 @@ var collection *mgo.Collection
 func serve(host string, port int) {
 	session, err := mgo.Dial(config.MongoURL)
 	if err != nil {
-		panic(err)
+		log.Fatal("MongoDB: ", err)
 	}
 	defer session.Close()
 
