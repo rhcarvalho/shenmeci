@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path"
 )
 
 type Config struct {
@@ -27,6 +28,8 @@ var configFile = flag.String("config", "config.json", "the configuration file in
 
 func loadConfig() {
 	flag.Parse()
+	configFileAbsPath := absPath(*configFile)
+	configFile = &configFileAbsPath
 	file, err := os.Open(*configFile)
 	if err != nil {
 		logFatalAndExampleConfig(err)
@@ -93,4 +96,15 @@ func logFatalAndExampleConfig(error ...interface{}) {
 	}
 	fmt.Printf("Example config.json:\n\n%s\n", exampleConfig())
 	os.Exit(1)
+}
+
+func absPath(pth string) string {
+	if path.IsAbs(pth) {
+		return pth
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return path.Join(wd, pth)
 }
