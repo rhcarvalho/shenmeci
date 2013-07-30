@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"net/http"
 	"path"
@@ -44,7 +43,7 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	// Insert into MongoDB in another goroutine.
 	// This finishes the response without blocking.
 	go func() {
-		err := collection.Insert(&QueryRecord{query, results, bson.Now(), duration, r})
+		err := collection.Insert(&QueryRecord{query, results, startTime, duration, r})
 		// Log and refresh the Session in case of insertion errors
 		if err != nil {
 			log.Print("MongoDB: ", err)
