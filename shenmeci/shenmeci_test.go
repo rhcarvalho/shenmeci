@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/rhcarvalho/DAWGo/dawg"
-	"os"
 	"testing"
 )
 
@@ -35,10 +33,7 @@ func TestEnglishChinese(t *testing.T) {
 }
 
 func testSegment(sentence string, expectedWords [][]rune, t *testing.T) {
-	d, err := newDAWGFromCEDICT()
-	if err != nil {
-		t.Fatal(err)
-	}
+	d := cedict.Dawg
 	words := segment(d, []rune(sentence))
 	if len(words) != len(expectedWords) {
 		t.Errorf("segmented %q should be %q, got %q", sentence, expectedWords, words)
@@ -52,37 +47,17 @@ func testSegment(sentence string, expectedWords [][]rune, t *testing.T) {
 }
 
 func BenchmarkLoadCEDICT(b *testing.B) {
-	var err error
 	for i := 0; i < b.N; i++ {
-		if _, err = loadCEDICT(os.Getenv("CEDICT")); err != nil {
-			b.Fatal(err)
-		}
+		loadCEDICT()
 	}
 }
 
 func BenchmarkSegment(b *testing.B) {
-	b.StopTimer()
-	d, err := newDAWGFromCEDICT()
-	if err != nil {
-		b.Fatal(err)
-	}
+	d := cedict.Dawg
 	sentence := []rune("语言信息处理")
-	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		segment(d, sentence)
 	}
-}
-
-func newDAWGFromCEDICT() (d *dawg.DAWG, err error) {
-	cedict, err := loadCEDICT(os.Getenv("CEDICT"))
-	if err != nil {
-		return nil, err
-	}
-	d = dawg.New(nil)
-	for k := range cedict.Dict {
-		d.Insert(k)
-	}
-	return
 }
 
 func TestPinyin(t *testing.T) {
@@ -95,4 +70,10 @@ func TestPinyin(t *testing.T) {
 	if r := pinyinNumberedToUnicode("U S B shou3 zhi3"); r != "U S B shǒu zhǐ" {
 		t.Errorf("expected %v got %v", "U S B shǒu zhǐ", r)
 	}
+}
+
+func init() {
+	loadConfig()
+	validateConfig()
+	loadCEDICT()
 }
