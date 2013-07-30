@@ -68,7 +68,7 @@ func populateDB() {
 	log.Printf("indexed %d entries\n", len(dict))
 }
 
-func searchDB(db *sql.DB, term string) (results []string) {
+func searchDB(term string) (results []string) {
 	rows, err := db.Query("SELECT key FROM dict WHERE entry MATCH ?", term)
 	if err != nil {
 		log.Fatal(err)

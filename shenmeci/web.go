@@ -31,7 +31,7 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	}())
 	if len(results) == 1 && results[0]["m"] == "?" {
 		log.Printf("q='%v' triggers Full-Text Search", query)
-		results = keysToResults(searchDB(db, query))
+		results = keysToResults(searchDB(query))
 	}
 	if results == nil {
 		log.Printf("q='%v' returns no results", query)
