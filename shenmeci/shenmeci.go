@@ -32,7 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db = createDB(cedict.Dict)
+	db = loadDB(cedict.Dict)
 	defer db.Close()
 	serve(config.Http.Host, config.Http.Port)
 }

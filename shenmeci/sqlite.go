@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 	"log"
+	"path"
 )
 
-func createDB(dict map[string]CEDICTEntry) *sql.DB {
-	db, err := sql.Open("sqlite3", ":memory:")
+func loadDB(dict map[string]CEDICTEntry) *sql.DB {
+	db, err := sql.Open("sqlite3", path.Join(path.Dir(config.CedictPath), "shenmeci.sqlite"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +26,22 @@ func createDB(dict map[string]CEDICTEntry) *sql.DB {
 			return db
 		}
 	}
-	_, err = db.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
+	var hasTable bool
+	err = db.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='dict'").Scan(&hasTable)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if hasTable {
+		log.Println("found FTS index")
+	} else {
+		log.Println("creating FTS index...")
+		populateDB(db, dict)
+	}
+	return db
+}
+
+func populateDB(db *sql.DB, dict map[string]CEDICTEntry) {
+	_, err := db.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -34,16 +50,12 @@ func createDB(dict map[string]CEDICTEntry) *sql.DB {
 		log.Fatal(err)
 	}
 	defer insertStmt.Close()
-
-	log.Println("creating FTS index...")
 	for key, entry := range dict {
 		for _, definition := range entry.definitions {
 			insertStmt.Exec(key, definition)
 		}
 	}
 	log.Printf("indexed %d entries\n", len(dict))
-
-	return db
 }
 
 func searchDB(db *sql.DB, term string) (results []string) {
