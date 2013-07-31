@@ -17,7 +17,7 @@ func loadDB() {
 	}
 
 	var sqliteVersion string
-	err = db.QueryRow("select sqlite_version()").Scan(&sqliteVersion)
+	err = db.QueryRow("SELECT sqlite_version()").Scan(&sqliteVersion)
 	if err != nil {
 		log.Fatal(err)
 	}
