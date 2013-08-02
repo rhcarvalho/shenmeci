@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"labix.org/v2/mgo"
 	"log"
 	"net/http"
@@ -13,10 +14,36 @@ import (
 
 type QueryRecord struct {
 	Query       string
-	Result      []map[string]string
+	Result      []*Result
 	When        time.Time
 	Duration    time.Duration
 	RequestInfo *http.Request
+}
+
+type Results struct {
+	R []*Result
+}
+
+type Result struct {
+	Z string // Hanzi
+	M string // Meaning
+	P string // Pinyin
+}
+
+func (r *Results) MarshalJSON() ([]byte, error) {
+	if r.R != nil {
+		return json.Marshal(&map[string]interface{}{"r": r.R})
+	} else {
+		return json.Marshal(&map[string]interface{}{"r": []interface{}{}})
+	}
+}
+
+func (r *Result) MarshalJSON() ([]byte, error) {
+	return json.Marshal(
+		&map[string]string{
+			"z": template.HTMLEscapeString(r.Z),
+			"m": template.HTMLEscapeString(r.M),
+			"p": template.HTMLEscapeString(r.P)})
 }
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -28,22 +55,21 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		return keys
 	}())
-	if len(results) == 1 && results[0]["m"] == "?" {
+	if len(results.R) == 1 && results.R[0].M == "?" {
 		log.Printf("q='%v' triggers Full-Text Search", query)
 		results = keysToResults(searchDB(query))
 	}
-	if results == nil {
+	if len(results.R) == 0 {
 		log.Printf("q='%v' returns no results", query)
-		results = []map[string]string{}
 	}
-	b, _ := json.Marshal(map[string]interface{}{"r": results})
+	b, _ := json.Marshal(results)
 	w.Write(b)
 	duration := time.Since(startTime)
 
 	// Insert into MongoDB in another goroutine.
 	// This finishes the response without blocking.
 	go func() {
-		err := collection.Insert(&QueryRecord{query, results, startTime, duration, r})
+		err := collection.Insert(&QueryRecord{query, results.R, startTime, duration, r})
 		// Log and refresh the Session in case of insertion errors
 		if err != nil {
 			log.Print("MongoDB: ", err)
@@ -52,7 +78,8 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 }
 
-func keysToResults(keys []string) (results []map[string]string) {
+func keysToResults(keys []string) *Results {
+	results := &Results{}
 	var m, p []string
 	for _, key := range keys {
 		entry, ok := cedict.Dict[key]
@@ -63,10 +90,10 @@ func keysToResults(keys []string) (results []map[string]string) {
 			m = []string{"?"}
 			p = []string{""}
 		}
-		results = append(results, map[string]string{
-			"z": key,
-			"m": strings.Join(m, "/"),
-			"p": strings.Join(p, "/"),
+		results.R = append(results.R, &Result{
+			Z: key,
+			M: strings.Join(m, "/"),
+			P: strings.Join(p, "/"),
 		})
 	}
 	return results
