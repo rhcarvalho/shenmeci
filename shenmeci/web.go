@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -63,6 +64,8 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("q='%v' returns no results", query)
 	}
 	b, _ := json.Marshal(results)
+	w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
+	w.Header().Set("Content-Type", "application/json")
 	w.Write(b)
 	duration := time.Since(startTime)
 
