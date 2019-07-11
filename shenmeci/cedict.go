@@ -4,10 +4,11 @@ import (
 	"bufio"
 	"bytes"
 	"compress/gzip"
-	"github.com/rhcarvalho/DAWGo/dawg"
 	"io"
 	"log"
 	"os"
+
+	"github.com/rhcarvalho/DAWGo/dawg"
 )
 
 type CEDICTEntry struct {

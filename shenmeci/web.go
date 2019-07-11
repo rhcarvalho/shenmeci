@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"labix.org/v2/mgo"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
 	"time"
+
+	"labix.org/v2/mgo"
 )
 
 type QueryRecord struct {
