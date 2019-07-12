@@ -24,19 +24,19 @@ Development/deployment dependencies
 -----------------------------------
 
 * Go
-* MongoDB
-* SQLite (>= 3.7.4)
-* mgo
+* SQLite (>= [3.9.0][sqlite-390], for the [`json1`][sqlite-json1] extension)
 * go-sqlite3
 * DAWGo
 
+[sqlite-390]: https://www.sqlite.org/releaselog/3_9_0.html
+[sqlite-json1]: https://www.sqlite.org/json1.html
 
 Running
 -------
 
 Download, compile and install in one go:
 
-    $ go get -u github.com/rhcarvalho/shenmeci/shenmeci
+    $ go get -u -tags sqlite_json1 github.com/rhcarvalho/shenmeci/shenmeci
 
 Download the CEDICT Chinese-English dictionary:
 
@@ -50,11 +50,10 @@ Before running Shenmeci you will need to create a configuration file like this:
         "Port": 8080
       },
       "StaticPath": "static/",
-      "CedictPath": "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
-      "MongoURL": "localhost"
+      "CedictPath": "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
     }
 
-Make sure MongoDB is running and you have a new version of the SQLite library.
+Make sure you have a new version of the SQLite library.
 Start Shenmeci:
 
     $ shenmeci -config path/to/config.json

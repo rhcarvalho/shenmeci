@@ -14,7 +14,6 @@ type Config struct {
 	Http       *HttpConfig
 	StaticPath string
 	CedictPath string
-	MongoURL   string
 }
 
 type HttpConfig struct {
@@ -82,9 +81,6 @@ func validateConfig() {
 	} else if _, err := os.Stat(config.CedictPath); err != nil {
 		errors = append(errors, fmt.Sprint("invalid CedictPath configuration: ", err))
 	}
-	if len(config.MongoURL) == 0 {
-		errors = append(errors, "missing MongoURL configuration")
-	}
 	if len(errors) > 0 {
 		errors = append([]interface{}{fmt.Sprintf("the configuration file '%s' is invalid", *configFile)},
 			errors...)
@@ -97,7 +93,7 @@ func exampleConfig() []byte {
 		&Config{&HttpConfig{"127.0.0.1", 8080},
 			"static/",
 			"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
-			"localhost:27017"}, "", "  ")
+		}, "", "  ")
 	return b
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"path/filepath"
 
@@ -48,6 +49,10 @@ func loadDB() {
 		log.Println("creating FTS index...")
 		populateDB()
 	}
+	_, err = db.Exec("CREATE TABLE IF NOT EXISTS query(json)")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func populateDB() {
@@ -81,4 +86,13 @@ func searchDB(term string) (results []string) {
 		results = append(results, key)
 	}
 	return results
+}
+
+func insertQueryRecord(qr QueryRecord) error {
+	b, err := json.Marshal(qr)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("INSERT INTO query VALUES(json(?))", b)
+	return err
 }

@@ -1,25 +1,76 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"net/url"
 	"path"
 	"strconv"
 	"strings"
 	"time"
-
-	"labix.org/v2/mgo"
 )
 
 type QueryRecord struct {
-	Query       string
-	Result      []*Result
-	When        time.Time
-	Duration    time.Duration
-	RequestInfo *http.Request
+	Query       string        `json:"query"`
+	Result      []*Result     `json:"result"`
+	When        time.Time     `json:"when"`
+	Duration    time.Duration `json:"duration"`
+	RequestInfo *RequestInfo  `json:"requestinfo"`
+}
+
+// RequestInfo is a JSON-serializable version of http.Request.
+type RequestInfo struct {
+	Method           string               `json:"method"`
+	URL              string               `json:"url"`
+	Proto            string               `json:"proto"`
+	ProtoMajor       int                  `json:"protomajor"`
+	ProtoMinor       int                  `json:"protominor"`
+	Header           http.Header          `json:"header"`
+	Body             []byte               `json:"body"`
+	ContentLength    int64                `json:"contentlength"`
+	TransferEncoding []string             `json:"transferencoding"`
+	Close            bool                 `json:"close"`
+	Host             string               `json:"host"`
+	Form             url.Values           `json:"form"`
+	PostForm         url.Values           `json:"postform"`
+	MultipartForm    *multipart.Form      `json:"multipartform"`
+	Trailer          http.Header          `json:"trailer"`
+	RemoteAddr       string               `json:"remoteaddr"`
+	RequestURI       string               `json:"requesturi"`
+	TLS              *tls.ConnectionState `json:"tls"`
+}
+
+func requestToRequestInfo(r *http.Request) *RequestInfo {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println("reading request body:", err)
+	}
+	return &RequestInfo{
+		Method:           r.Method,
+		URL:              r.URL.String(),
+		Proto:            r.Proto,
+		ProtoMajor:       r.ProtoMajor,
+		ProtoMinor:       r.ProtoMinor,
+		Header:           r.Header,
+		Body:             body,
+		ContentLength:    r.ContentLength,
+		TransferEncoding: r.TransferEncoding,
+		Close:            r.Close,
+		Host:             r.Host,
+		Form:             r.Form,
+		PostForm:         r.PostForm,
+		MultipartForm:    r.MultipartForm,
+		Trailer:          r.Trailer,
+		RemoteAddr:       r.RemoteAddr,
+		RequestURI:       r.RequestURI,
+		TLS:              r.TLS,
+	}
 }
 
 type Results struct {
@@ -42,10 +93,16 @@ func (r *Results) MarshalJSON() ([]byte, error) {
 
 func (r *Result) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
-		&map[string]string{
-			"z": template.HTMLEscapeString(r.Z),
-			"m": template.HTMLEscapeString(r.M),
-			"p": template.HTMLEscapeString(r.P)})
+		struct {
+			Z string `json:"z"`
+			M string `json:"m"`
+			P string `json:"p"`
+		}{
+			Z: template.HTMLEscapeString(r.Z),
+			M: template.HTMLEscapeString(r.M),
+			P: template.HTMLEscapeString(r.P),
+		},
+	)
 }
 
 func segmentHandler(w http.ResponseWriter, r *http.Request) {
@@ -70,14 +127,19 @@ func segmentHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 	duration := time.Since(startTime)
 
-	// Insert into MongoDB in another goroutine.
-	// This finishes the response without blocking.
+	// Store query information in a new goroutine, without blocking the
+	// request-response cycle.
 	go func() {
-		err := collection.Insert(&QueryRecord{query, results.R, startTime, duration, r})
-		// Log and refresh the Session in case of insertion errors
+		err := insertQueryRecord(QueryRecord{
+			query,
+			results.R,
+			startTime,
+			duration,
+			requestToRequestInfo(r),
+		})
+		// Log insertion errors
 		if err != nil {
-			log.Print("MongoDB: ", err)
-			collection.Database.Session.Refresh()
+			log.Println("insertQueryRecord:", err)
 		}
 	}()
 }
@@ -103,27 +165,14 @@ func keysToResults(keys []string) *Results {
 	return results
 }
 
-var collection *mgo.Collection
-
 func serve(host string, port int) {
-	session, err := mgo.Dial(config.MongoURL)
-	if err != nil {
-		log.Fatal("MongoDB: ", err)
-	}
-	defer session.Close()
-
-	// Optional. Switch the session to a monotonic behavior.
-	session.SetMode(mgo.Monotonic, true)
-
-	collection = session.DB("shenmeci").C("queries")
-
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join(config.StaticPath, "index.html"))
 	})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
 	http.HandleFunc("/segment", segmentHandler)
 	log.Printf("serving at http://%s:%d", host, port)
-	err = http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
