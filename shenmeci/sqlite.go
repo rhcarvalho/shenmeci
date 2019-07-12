@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"log"
-	"path"
+	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -12,7 +12,7 @@ var db *sql.DB
 
 func loadDB() {
 	var err error
-	db, err = sql.Open("sqlite3", path.Join(path.Dir(config.CedictPath), "shenmeci.sqlite"))
+	db, err = sql.Open("sqlite3", filepath.Join(filepath.Dir(config.CedictPath), "shenmeci.sqlite"))
 	if err != nil {
 		log.Fatal(err)
 	}
