@@ -45,6 +45,14 @@ func loadConfig() {
 	if err != nil {
 		logFatalAndExampleConfig(fmt.Sprintf("the configuration file '%s' is invalid: %v", *configFile, err))
 	}
+	absRelToConfigFile := func(path string) string {
+		if filepath.IsAbs(path) {
+			return path
+		}
+		return filepath.Join(filepath.Dir(*configFile), path)
+	}
+	config.StaticPath = absRelToConfigFile(config.StaticPath)
+	config.CedictPath = absRelToConfigFile(config.CedictPath)
 }
 
 func validateConfig() {
