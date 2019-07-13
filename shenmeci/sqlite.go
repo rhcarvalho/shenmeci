@@ -32,6 +32,7 @@ func loadDB() {
 		"PRAGMA journal_mode = OFF",
 		"PRAGMA temp_store = MEMORY",
 		"PRAGMA cache_size = -20480",
+		"PRAGMA quick_check",
 	}
 	for _, sql := range sqls {
 		rows, err := db.Query(sql)
