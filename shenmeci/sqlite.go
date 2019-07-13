@@ -15,8 +15,9 @@ import (
 var db *sql.DB
 
 func loadDB() {
+	dbpath := filepath.Join(filepath.Dir(config.CedictPath), "shenmeci.sqlite")
 	var err error
-	db, err = sql.Open("sqlite3", filepath.Join(filepath.Dir(config.CedictPath), "shenmeci.sqlite"))
+	db, err = sql.Open("sqlite3", dbpath)
 	if err != nil {
 		log.Fatal(err)
 	}
