@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"path/filepath"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -47,7 +48,10 @@ func loadDB() {
 		log.Println("found FTS index")
 	} else {
 		log.Println("creating FTS index...")
-		populateDB()
+		err = populateDB()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	_, err = db.Exec("CREATE TABLE IF NOT EXISTS query(json)")
 	if err != nil {
@@ -55,23 +59,39 @@ func loadDB() {
 	}
 }
 
-func populateDB() {
-	_, err := db.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
+func populateDB() error {
+	start := time.Now()
+
+	tx, err := db.Begin()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	insertStmt, err := db.Prepare("INSERT INTO dict(key, entry) VALUES(?, ?)")
+	// Do not call Rollback because journal_mode = OFF
+	//defer tx.Rollback()
+
+	_, err = tx.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	defer insertStmt.Close()
+	stmt, err := tx.Prepare("INSERT INTO dict(key, entry) VALUES(?, ?)")
+	if err != nil {
+		return err
+	}
 	dict := cedict.Dict
 	for key, entry := range dict {
 		for _, definition := range entry.definitions {
-			insertStmt.Exec(key, definition)
+			stmt.Exec(key, definition)
 		}
 	}
-	log.Printf("indexed %d entries\n", len(dict))
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	duration := time.Since(start).Truncate(time.Millisecond)
+	log.Printf("indexed %d entries in %v\n", len(dict), duration)
+	return nil
 }
 
 func searchDB(term string) (results []string) {
