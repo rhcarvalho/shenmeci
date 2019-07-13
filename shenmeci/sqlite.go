@@ -1,3 +1,5 @@
+// +build sqlite_json sqlite_json1 json1
+
 package main
 
 import (
