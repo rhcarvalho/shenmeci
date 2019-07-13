@@ -34,9 +34,20 @@ func loadDB() {
 		"PRAGMA cache_size = -20480",
 	}
 	for _, sql := range sqls {
-		_, err = db.Exec(sql)
+		rows, err := db.Query(sql)
 		if err != nil {
-			log.Fatalf("%q: %s\n", err, sql)
+			log.Fatalf("%s: %s\n", sql, err)
+		}
+		defer rows.Close()
+		for rows.Next() {
+			var s string
+			if err := rows.Scan(&s); err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("%s: %s", sql, s)
+		}
+		if err := rows.Err(); err != nil {
+			log.Fatalf("%s: %s\n", sql, err)
 		}
 	}
 	var hasTable bool
