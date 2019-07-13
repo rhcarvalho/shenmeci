@@ -1,4 +1,5 @@
 // +build sqlite_json sqlite_json1 json1
+// +build sqlite_fts5 fts5
 
 package main
 
@@ -56,14 +57,14 @@ func loadDB() {
 		}
 	}
 	var hasTable bool
-	err = db.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='dict'").Scan(&hasTable)
+	err = db.QueryRow("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='dict5'").Scan(&hasTable)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if hasTable {
-		log.Println("found FTS index")
+		log.Println("found FTS5 index")
 	} else {
-		log.Println("creating FTS index...")
+		log.Println("creating FTS5 index...")
 		err = populateDB()
 		if err != nil {
 			log.Fatal(err)
@@ -85,11 +86,11 @@ func populateDB() error {
 	// Do not call Rollback because journal_mode = OFF
 	//defer tx.Rollback()
 
-	_, err = tx.Exec("CREATE VIRTUAL TABLE dict USING fts4(key, entry)")
+	_, err = tx.Exec("CREATE VIRTUAL TABLE dict5 USING fts5(key, entry)")
 	if err != nil {
 		return err
 	}
-	stmt, err := tx.Prepare("INSERT INTO dict(key, entry) VALUES(?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO dict5(key, entry) VALUES(?, ?)")
 	if err != nil {
 		return err
 	}
@@ -111,7 +112,7 @@ func populateDB() error {
 }
 
 func searchDB(term string) (results []string) {
-	rows, err := db.Query("SELECT key FROM dict WHERE entry MATCH ?", term)
+	rows, err := db.Query("SELECT key FROM dict5 WHERE entry MATCH ? ORDER BY rank", term)
 	if err != nil {
 		log.Fatal(err)
 	}
