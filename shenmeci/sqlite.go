@@ -35,6 +35,7 @@ func loadDB() {
 		"PRAGMA temp_store = MEMORY",
 		"PRAGMA cache_size = -20480",
 		"PRAGMA quick_check",
+		"SELECT json(1)",
 	}
 	for _, sql := range sqls {
 		rows, err := db.Query(sql)
