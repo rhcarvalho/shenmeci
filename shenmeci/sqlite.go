@@ -86,7 +86,12 @@ func populateDB() error {
 	// Do not call Rollback because journal_mode = OFF
 	//defer tx.Rollback()
 
-	_, err = tx.Exec("CREATE VIRTUAL TABLE dict5 USING fts5(key, entry)")
+	// FIXME: set remove_diacritics=2 when ready to make database require
+	// SQLite >= 3.27.0. See https://sqlite.org/releaselog/3_27_0.html and
+	// https://sqlite.org/fts5.html#unicode61_tokenizer.
+	// Previous SQLite versions throw an error when trying to operate on a
+	// table with remove_diacritics=2.
+	_, err = tx.Exec("CREATE VIRTUAL TABLE dict5 USING fts5(key, entry, tokenize = 'porter unicode61 remove_diacritics 1')")
 	if err != nil {
 		return err
 	}
