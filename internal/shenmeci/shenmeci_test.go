@@ -1,7 +1,6 @@
 package shenmeci
 
 import (
-	"reflect"
 	"testing"
 )
 
@@ -45,10 +44,6 @@ func testSegment(sentence string, expectedWords [][]rune, t *testing.T) {
 				sentence, expectedWords, words, i, expectedWords[i], word)
 		}
 	}
-	wordsNew := segmentNew(d, []rune(sentence))
-	if !reflect.DeepEqual(wordsNew, words) {
-		t.Error("`segmentNew` is not equivalent to `segment`")
-	}
 }
 
 func BenchmarkLoadCEDICT(b *testing.B) {
@@ -60,16 +55,9 @@ func BenchmarkLoadCEDICT(b *testing.B) {
 func BenchmarkSegment(b *testing.B) {
 	d := cedict.Dawg
 	sentence := []rune("语言信息处理English你好")
-	b.Run("Old", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			segment(d, sentence)
-		}
-	})
-	b.Run("New", func(b *testing.B) {
-		for i := 0; i < b.N; i++ {
-			segmentNew(d, sentence)
-		}
-	})
+	for i := 0; i < b.N; i++ {
+		segment(d, sentence)
+	}
 }
 
 func TestPinyin(t *testing.T) {
