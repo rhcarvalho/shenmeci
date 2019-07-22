@@ -9,41 +9,41 @@ import (
 
 // the map keys are space-separated words to construct the DAWG.
 var dawgs = map[string]*DAWG{
-	"": &DAWG{&node{}},
-	"g": &DAWG{&node{children: map[rune]*node{
-		'g': &node{eow: true},
-	}}},
-	"go": &DAWG{&node{children: map[rune]*node{
-		'g': &node{children: map[rune]*node{
-			'o': &node{eow: true},
+	"": &DAWG{},
+	"g": &DAWG{children: map[rune]*DAWG{
+		'g': &DAWG{eow: true},
+	}},
+	"go": &DAWG{children: map[rune]*DAWG{
+		'g': &DAWG{children: map[rune]*DAWG{
+			'o': &DAWG{eow: true},
 		}},
-	}}},
-	"g go": &DAWG{&node{children: map[rune]*node{
-		'g': &node{eow: true, children: map[rune]*node{
-			'o': &node{eow: true},
+	}},
+	"g go": &DAWG{children: map[rune]*DAWG{
+		'g': &DAWG{eow: true, children: map[rune]*DAWG{
+			'o': &DAWG{eow: true},
 		}},
-	}}},
-	"g t": &DAWG{&node{children: map[rune]*node{
-		'g': &node{eow: true},
-		't': &node{eow: true},
-	}}},
-	"go t": &DAWG{&node{children: map[rune]*node{
-		'g': &node{children: map[rune]*node{
-			'o': &node{eow: true},
+	}},
+	"g t": &DAWG{children: map[rune]*DAWG{
+		'g': &DAWG{eow: true},
+		't': &DAWG{eow: true},
+	}},
+	"go t": &DAWG{children: map[rune]*DAWG{
+		'g': &DAWG{children: map[rune]*DAWG{
+			'o': &DAWG{eow: true},
 		}},
-		't': &node{eow: true},
-	}}},
-	"语 语言 信 信息 处 处理": &DAWG{&node{children: map[rune]*node{
-		'处': &node{eow: true, children: map[rune]*node{
-			'理': &node{eow: true},
+		't': &DAWG{eow: true},
+	}},
+	"语 语言 信 信息 处 处理": &DAWG{children: map[rune]*DAWG{
+		'处': &DAWG{eow: true, children: map[rune]*DAWG{
+			'理': &DAWG{eow: true},
 		}},
-		'语': &node{eow: true, children: map[rune]*node{
-			'言': &node{eow: true},
+		'语': &DAWG{eow: true, children: map[rune]*DAWG{
+			'言': &DAWG{eow: true},
 		}},
-		'信': &node{eow: true, children: map[rune]*node{
-			'息': &node{eow: true},
+		'信': &DAWG{eow: true, children: map[rune]*DAWG{
+			'息': &DAWG{eow: true},
 		}},
-	}}},
+	}},
 }
 
 func TestNew(t *testing.T) {
@@ -55,102 +55,36 @@ func TestNew(t *testing.T) {
 	}
 }
 
-func TestContains(t *testing.T) {
+func TestLongestCommonPrefix(t *testing.T) {
 	type query struct {
-		key string
-		res bool
-	}
-	tests := []struct {
-		words   string
-		queries []query
-	}{{
-		"g", []query{
-			{"g", true},
-			{"go", false},
-			{"z", false},
-		}}, {
-		"go", []query{
-			{"g", false},
-			{"go", true},
-			{"golang", false},
-		}}, {
-		"g go", []query{
-			{"g", true},
-			{"go", true},
-			{"golang", false},
-		}}, {
-		"g t", []query{
-			{"g", true},
-			{"t", true},
-			{"golang", false},
-			{"tornado", false},
-			{"z", false},
-		}}, {
-		"go t", []query{
-			{"g", false},
-			{"go", true},
-			{"t", true},
-			{"golang", false},
-			{"tornado", false},
-			{"z", false},
-		}}, {
-		"语 语言 信 信息 处 处理", []query{
-			{"语", true},
-			{"信", true},
-			{"处", true},
-			{"言", false},
-			{"息", false},
-			{"理", false},
-			{"语言", true},
-			{"信息", true},
-			{"处理", true},
-			{"语言信息处理", false},
-		}},
-	}
-	for _, test := range tests {
-		d, ok := dawgs[test.words]
-		if !ok {
-			t.Errorf("Missing DAWG for words %#v", test.words)
-			continue
-		}
-		for _, q := range test.queries {
-			if ok := d.Contains(q.key); ok != q.res {
-				t.Errorf("DAWG(%#v).Contains(%#v) should be %v, got %v", test.words, q.key, q.res, ok)
-			}
-		}
-	}
-}
-
-func TestPrefixes(t *testing.T) {
-	type query struct {
-		key string
-		res []string
+		key           string
+		longestPrefix string
 	}
 	tests := []struct {
 		words   string
 		queries []query
 	}{{
 		"g go", []query{
-			{"", []string{}},
-			{"g", []string{"g"}},
-			{"go", []string{"g", "go"}},
-			{"golang", []string{"g", "go"}},
-			{"python", []string{}},
+			{"", ""},
+			{"g", "g"},
+			{"go", "go"},
+			{"golang", "go"},
+			{"python", ""},
 		}}, {
 		"g t", []query{
-			{"g", []string{"g"}},
-			{"t", []string{"t"}},
-			{"golang", []string{"g"}},
-			{"tornado", []string{"t"}},
-			{"z", []string{}},
+			{"g", "g"},
+			{"t", "t"},
+			{"golang", "g"},
+			{"tornado", "t"},
+			{"z", ""},
 		}}, {
 		"", []query{
-			{"", []string{}},
-			{"g", []string{}},
-			{"golang", []string{}},
+			{"", ""},
+			{"g", ""},
+			{"golang", ""},
 		}}, {
 		"语 语言 信 信息 处 处理", []query{
-			{"语言信息处理", []string{"语", "语言"}},
+			{"语言信息处理", "语言"},
 		}},
 	}
 	for _, test := range tests {
@@ -160,62 +94,27 @@ func TestPrefixes(t *testing.T) {
 			continue
 		}
 		for _, q := range test.queries {
-			if prefs := d.PrefixesString(q.key); !slicesEqual(prefs, q.res) {
-				t.Errorf("DAWG(%#v).Prefixes(%#v) should be %v, got %v", test.words, q.key, q.res, prefs)
+			want := q.longestPrefix
+			got := string(d.LongestCommonPrefix([]rune(q.key)))
+			if got != want {
+				t.Errorf("got %q, want %q", got, want)
 			}
-			t.Run("LongestCommonPrefix", func(t *testing.T) {
-				want := ""
-				if len(q.res) > 0 {
-					want = q.res[len(q.res)-1]
-				}
-				got := string(d.LongestCommonPrefix([]rune(q.key)))
-				if got != want {
-					t.Errorf("got %q, want %q", got, want)
-				}
-			})
 		}
 	}
 }
 
 // Benchmarks
-func BenchmarkPrefixes(b *testing.B) {
-	inputWords := "语 语言 信 信息 处 处理"
-	d, ok := dawgs[inputWords]
-	if !ok {
-		b.Fatalf("Missing DAWG for words %#v", inputWords)
-	}
-	sentence := []rune("语言信息处理")
-	for i := 0; i < b.N; i++ {
-		d.Prefixes(sentence)
-	}
-}
-
-func BenchmarkPrefixesString(b *testing.B) {
-	inputWords := "语 语言 信 信息 处 处理"
-	d, ok := dawgs[inputWords]
-	if !ok {
-		b.Fatalf("Missing DAWG for words %#v", inputWords)
-	}
-	sentence := "语言信息处理"
-	for i := 0; i < b.N; i++ {
-		d.PrefixesString(sentence)
-	}
-}
 
 // Helper functions for printings DAWGs.
 func (d *DAWG) String() string {
-	return fmt.Sprintf("&DAWG{%v}", d.root)
-}
-
-func (n *node) String() string {
-	eowS, chldS := eowToString(n.eow), childrenToString(n.children)
+	eowS, chldS := eowToString(d.eow), childrenToString(d.children)
 	var sep string
 	if eowS != "" && chldS != "" {
 		sep = ", "
 	} else {
 		sep = ""
 	}
-	return fmt.Sprintf("&node{%s%s%s}", eowS, sep, chldS)
+	return fmt.Sprintf("&DAWG{%s%s%s}", eowS, sep, chldS)
 }
 
 func eowToString(eow bool) string {
@@ -225,11 +124,11 @@ func eowToString(eow bool) string {
 	return ""
 }
 
-func childrenToString(children map[rune]*node) string {
+func childrenToString(children map[rune]*DAWG) string {
 	if children == nil {
 		return ""
 	}
-	b := bytes.NewBufferString("children: map[rune]*node{\n")
+	b := bytes.NewBufferString("children: map[rune]*DAWG{\n")
 	for k, nd := range children {
 		fmt.Fprintf(b, "'%q': %v,\n", k, nd)
 	}
@@ -239,38 +138,21 @@ func childrenToString(children map[rune]*node) string {
 
 // Helper functions for comparing DAWGs.
 func dawgsEqual(d1, d2 *DAWG) bool {
-	return nodesEqual(d1.root, d2.root)
-}
-
-func nodesEqual(x, y *node) bool {
-	if x == nil {
-		return y == nil
+	if d1 == nil {
+		return d2 == nil
 	}
-	if y == nil {
+	if d2 == nil {
 		return false
 	}
-	if x.eow != y.eow {
+	if d1.eow != d2.eow {
 		return false
 	}
-	for key, xChildNode := range x.children {
-		if yChildNode, ok := y.children[key]; !ok {
+	for key, d1ChildNode := range d1.children {
+		d2ChildNode, ok := d2.children[key]
+		if !ok {
 			return false
-		} else {
-			if !nodesEqual(xChildNode, yChildNode) {
-				return false
-			}
 		}
-	}
-	return true
-}
-
-// sliceEq defines equality based on its contents.
-func slicesEqual(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
+		if !dawgsEqual(d1ChildNode, d2ChildNode) {
 			return false
 		}
 	}
