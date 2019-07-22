@@ -163,6 +163,16 @@ func TestPrefixes(t *testing.T) {
 			if prefs := d.PrefixesString(q.key); !slicesEqual(prefs, q.res) {
 				t.Errorf("DAWG(%#v).Prefixes(%#v) should be %v, got %v", test.words, q.key, q.res, prefs)
 			}
+			t.Run("LongestCommonPrefix", func(t *testing.T) {
+				want := ""
+				if len(q.res) > 0 {
+					want = q.res[len(q.res)-1]
+				}
+				got := string(d.LongestCommonPrefix([]rune(q.key)))
+				if got != want {
+					t.Errorf("got %q, want %q", got, want)
+				}
+			})
 		}
 	}
 }

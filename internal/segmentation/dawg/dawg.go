@@ -85,6 +85,26 @@ func (d *DAWG) PrefixesString(word string) (prefixes []string) {
 	return
 }
 
+func (d *DAWG) LongestCommonPrefix(sentence []rune) []rune {
+	current := d.root
+	i, j := 0, 0
+	for _, k := range sentence {
+		if current.children == nil {
+			break
+		}
+		if next, ok := current.children[k]; ok {
+			i++
+			if next.eow {
+				j = i
+			}
+			current = next
+		} else {
+			break
+		}
+	}
+	return sentence[:j]
+}
+
 // Returns a channel filled with words of this DAWG that are prefixes of the given word.
 // Not implemented
 func (d *DAWG) IterPrefixes(word string) chan string {
