@@ -14,6 +14,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/rhcarvalho/shenmeci/internal/segmentation"
 )
 
 type QueryRecord struct {
@@ -105,43 +107,45 @@ func (r *Result) MarshalJSON() ([]byte, error) {
 	)
 }
 
-func segmentHandler(w http.ResponseWriter, r *http.Request) {
-	startTime := time.Now()
-	query := r.FormValue("q")
-	results := keysToResults(func() (keys []string) {
-		for _, key := range segment(cedict.Dawg, []rune(query)) {
-			keys = append(keys, string(key))
+func segmentHandler(segmenter segmentation.Segmenter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		startTime := time.Now()
+		query := r.FormValue("q")
+		results := keysToResults(func() (keys []string) {
+			for _, key := range segmenter.Segment([]rune(query)) {
+				keys = append(keys, string(key))
+			}
+			return keys
+		}())
+		if len(results.R) == 1 && results.R[0].M == "?" {
+			log.Printf("q='%v' triggers Full-Text Search", query)
+			results = keysToResults(searchDB(query))
 		}
-		return keys
-	}())
-	if len(results.R) == 1 && results.R[0].M == "?" {
-		log.Printf("q='%v' triggers Full-Text Search", query)
-		results = keysToResults(searchDB(query))
-	}
-	if len(results.R) == 0 {
-		log.Printf("q='%v' returns no results", query)
-	}
-	b, _ := json.Marshal(results)
-	w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(b)
-	duration := time.Since(startTime)
+		if len(results.R) == 0 {
+			log.Printf("q='%v' returns no results", query)
+		}
+		b, _ := json.Marshal(results)
+		w.Header().Set("Content-Length", strconv.FormatInt(int64(len(b)), 10))
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(b)
+		duration := time.Since(startTime)
 
-	// Store query information in a new goroutine, without blocking the
-	// request-response cycle.
-	go func() {
-		err := insertQueryRecord(QueryRecord{
-			query,
-			results.R,
-			startTime,
-			duration,
-			requestToRequestInfo(r),
-		})
-		// Log insertion errors
-		if err != nil {
-			log.Println("insertQueryRecord:", err)
-		}
-	}()
+		// Store query information in a new goroutine, without blocking the
+		// request-response cycle.
+		go func() {
+			err := insertQueryRecord(QueryRecord{
+				query,
+				results.R,
+				startTime,
+				duration,
+				requestToRequestInfo(r),
+			})
+			// Log insertion errors
+			if err != nil {
+				log.Println("insertQueryRecord:", err)
+			}
+		}()
+	}
 }
 
 func keysToResults(keys []string) *Results {
@@ -165,13 +169,13 @@ func keysToResults(keys []string) *Results {
 	return results
 }
 
-func Serve(host string, port int) {
+func Serve(host string, port int, segmenter segmentation.Segmenter) {
 	config := GlobalConfig
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join(config.StaticPath, "index.html"))
 	})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
-	http.HandleFunc("/segment", segmentHandler)
+	http.HandleFunc("/segment", segmentHandler(segmenter))
 	log.Printf("serving at http://%s:%d", host, port)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil)
 	if err != nil {

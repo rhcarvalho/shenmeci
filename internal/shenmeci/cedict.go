@@ -7,8 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-
-	"github.com/rhcarvalho/shenmeci/internal/segmentation/dawg"
 )
 
 type CEDICTEntry struct {
@@ -18,13 +16,12 @@ type CEDICTEntry struct {
 
 type CEDICT struct {
 	Dict      map[string]CEDICTEntry
-	Dawg      *dawg.DAWG
 	MaxKeyLen int
 }
 
 var cedict *CEDICT
 
-func LoadCEDICT() {
+func LoadCEDICT() []string {
 	config := GlobalConfig
 	f, err := os.Open(config.CedictPath)
 	if err != nil {
@@ -37,8 +34,9 @@ func LoadCEDICT() {
 	}
 	defer r.Close()
 	br := bufio.NewReader(r)
-	cedict = &CEDICT{Dict: make(map[string]CEDICTEntry), Dawg: dawg.New(nil)}
-	log.Println("loading CEDICT into dict/DAWG...")
+	cedict = &CEDICT{Dict: make(map[string]CEDICTEntry)}
+	var vocabulary []string
+	log.Println("loading CEDICT...")
 	for {
 		line, err := br.ReadBytes('\n')
 		if err != nil && err != io.EOF {
@@ -62,7 +60,7 @@ func LoadCEDICT() {
 		entry.definitions = append(entry.definitions, meaning)
 		entry.pinyin = append(entry.pinyin, pinyinNumberedToUnicode(pinyin))
 		cedict.Dict[wordSimplified] = entry
-		cedict.Dawg.Insert(wordSimplified)
+		vocabulary = append(vocabulary, wordSimplified)
 		if wordLen := len([]rune(wordSimplified)); wordLen > cedict.MaxKeyLen {
 			cedict.MaxKeyLen = wordLen
 		}
@@ -71,4 +69,5 @@ func LoadCEDICT() {
 		}
 	}
 	log.Printf("loaded %v entries\n", len(cedict.Dict))
+	return vocabulary
 }

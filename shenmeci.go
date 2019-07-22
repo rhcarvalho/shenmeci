@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 
+	"github.com/rhcarvalho/shenmeci/internal/segmentation"
 	"github.com/rhcarvalho/shenmeci/internal/shenmeci"
 )
 
@@ -25,8 +26,8 @@ func main() {
 	}
 	ln.Close()
 
-	shenmeci.LoadCEDICT()
+	vocabulary := shenmeci.LoadCEDICT()
 	shenmeci.LoadDB()
 	defer shenmeci.CloseDB()
-	shenmeci.Serve(config.Http.Host, config.Http.Port)
+	shenmeci.Serve(config.Http.Host, config.Http.Port, segmentation.NewSegmenter(vocabulary))
 }
