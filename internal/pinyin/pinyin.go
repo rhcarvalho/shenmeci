@@ -1,14 +1,24 @@
-package shenmeci
+package pinyin
 
 import (
 	"strconv"
 	"strings"
 )
 
-// pinyinNumberedSyllableToUnicode converts a single
-// pinyin syllabe from numbered form to unicode.
+// ToDiacritics converts a string of Pinyin syllables to use diacritics instead
+// of numbers.
+func ToDiacritics(pinyin string) string {
+	syllables := strings.Fields(pinyin)
+	for i, syllable := range syllables {
+		syllables[i] = toDiacritics(syllable)
+	}
+	return strings.Join(syllables, " ")
+}
+
+// toDiacritics converts a single Pinyin syllable from numbered form to use
+// diacritics.
 // Example: zhong1 -> zhōng
-func pinyinNumberedSyllableToUnicode(pinyin string) string {
+func toDiacritics(pinyin string) string {
 	var (
 		a = []rune("āáǎàa")
 		e = []rune("ēéěèe")
@@ -54,12 +64,4 @@ func pinyinNumberedSyllableToUnicode(pinyin string) string {
 		}
 	}
 	return pinyin
-}
-
-func pinyinNumberedToUnicode(pinyin string) string {
-	syllables := strings.Split(pinyin, " ")
-	for i, syllable := range syllables {
-		syllables[i] = pinyinNumberedSyllableToUnicode(syllable)
-	}
-	return strings.Join(syllables, " ")
 }
