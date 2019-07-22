@@ -1,4 +1,4 @@
-package main
+package shenmeci
 
 import (
 	"bufio"
@@ -24,7 +24,8 @@ type CEDICT struct {
 
 var cedict *CEDICT
 
-func loadCEDICT() {
+func LoadCEDICT() {
+	config := GlobalConfig
 	f, err := os.Open(config.CedictPath)
 	if err != nil {
 		log.Fatal("CEDICT: ", err)

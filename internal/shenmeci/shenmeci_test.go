@@ -1,4 +1,4 @@
-package main
+package shenmeci
 
 import (
 	"testing"
@@ -48,7 +48,7 @@ func testSegment(sentence string, expectedWords [][]rune, t *testing.T) {
 
 func BenchmarkLoadCEDICT(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		loadCEDICT()
+		LoadCEDICT()
 	}
 }
 
@@ -73,7 +73,7 @@ func TestPinyin(t *testing.T) {
 }
 
 func init() {
-	loadConfig()
-	validateConfig()
-	loadCEDICT()
+	LoadConfig()
+	ValidateConfig()
+	LoadCEDICT()
 }

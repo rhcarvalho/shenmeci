@@ -1,7 +1,7 @@
 // +build sqlite_json sqlite_json1 json1
 // +build sqlite_fts5 fts5
 
-package main
+package shenmeci
 
 import (
 	"database/sql"
@@ -15,7 +15,8 @@ import (
 
 var db *sql.DB
 
-func loadDB() {
+func LoadDB() {
+	config := GlobalConfig
 	dbpath := filepath.Join(filepath.Dir(config.CedictPath), "shenmeci.sqlite")
 	var err error
 	db, err = sql.Open("sqlite3", dbpath)
@@ -74,6 +75,10 @@ func loadDB() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CloseDB() error {
+	return db.Close()
 }
 
 func populateDB() error {

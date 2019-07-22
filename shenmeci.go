@@ -5,11 +5,14 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"github.com/rhcarvalho/shenmeci/internal/shenmeci"
 )
 
 func main() {
-	loadConfig()
-	validateConfig()
+	shenmeci.LoadConfig()
+	shenmeci.ValidateConfig()
+	config := shenmeci.GlobalConfig
 
 	// Test whether we can listen on the provided Host and Port.
 	// If the Host:Port is already in use, we can exit before wasting more resources.
@@ -22,8 +25,8 @@ func main() {
 	}
 	ln.Close()
 
-	loadCEDICT()
-	loadDB()
-	defer db.Close()
-	serve(config.Http.Host, config.Http.Port)
+	shenmeci.LoadCEDICT()
+	shenmeci.LoadDB()
+	defer shenmeci.CloseDB()
+	shenmeci.Serve(config.Http.Host, config.Http.Port)
 }

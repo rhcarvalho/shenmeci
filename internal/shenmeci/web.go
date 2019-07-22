@@ -1,4 +1,4 @@
-package main
+package shenmeci
 
 import (
 	"crypto/tls"
@@ -165,7 +165,8 @@ func keysToResults(keys []string) *Results {
 	return results
 }
 
-func serve(host string, port int) {
+func Serve(host string, port int) {
+	config := GlobalConfig
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path.Join(config.StaticPath, "index.html"))
 	})

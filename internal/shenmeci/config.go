@@ -1,4 +1,4 @@
-package main
+package shenmeci
 
 import (
 	"encoding/json"
@@ -21,11 +21,12 @@ type HttpConfig struct {
 	Port int
 }
 
-var config Config
+var GlobalConfig Config
 
 var configFile = flag.String("config", "config.json", "the configuration file in JSON format")
 
-func loadConfig() {
+func LoadConfig() {
+	config := GlobalConfig
 	flag.Parse()
 	configFileAbsPath, err := filepath.Abs(*configFile)
 	if err != nil {
@@ -52,9 +53,11 @@ func loadConfig() {
 	}
 	config.StaticPath = absRelToConfigFile(config.StaticPath)
 	config.CedictPath = absRelToConfigFile(config.CedictPath)
+	GlobalConfig = config
 }
 
-func validateConfig() {
+func ValidateConfig() {
+	config := GlobalConfig
 	errors := []interface{}{}
 	if config.Http == nil {
 		errors = append(errors, "missing Http configuration")

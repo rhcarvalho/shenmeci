@@ -36,7 +36,7 @@ Running
 
 Download, compile and install in one go:
 
-    $ go get -u -tags 'sqlite_json1 sqlite_fts5' github.com/rhcarvalho/shenmeci/shenmeci
+    $ go get -u -tags 'sqlite_json1 sqlite_fts5' github.com/rhcarvalho/shenmeci
 
 Download the CEDICT Chinese-English dictionary:
 
