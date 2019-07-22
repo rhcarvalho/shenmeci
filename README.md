@@ -26,7 +26,6 @@ Development/deployment dependencies
 * Go
 * SQLite (>= [3.9.0][sqlite-390], for the [`json1`][sqlite-json1] extension)
 * go-sqlite3
-* DAWGo
 
 [sqlite-390]: https://www.sqlite.org/releaselog/3_9_0.html
 [sqlite-json1]: https://www.sqlite.org/json1.html

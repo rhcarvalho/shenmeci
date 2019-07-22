@@ -1,7 +1,7 @@
 package shenmeci
 
 import (
-	"github.com/rhcarvalho/DAWGo/dawg"
+	"github.com/rhcarvalho/shenmeci/internal/segmentation/dawg"
 )
 
 func segment(d *dawg.DAWG, sentence []rune) (words [][]rune) {

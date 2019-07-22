@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/rhcarvalho/DAWGo/dawg"
+	"github.com/rhcarvalho/shenmeci/internal/segmentation/dawg"
 )
 
 type CEDICTEntry struct {
