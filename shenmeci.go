@@ -29,5 +29,10 @@ func main() {
 	vocabulary := shenmeci.LoadCEDICT()
 	shenmeci.LoadDB()
 	defer shenmeci.CloseDB()
-	shenmeci.Serve(config.Http.Host, config.Http.Port, segmentation.NewSegmenter(vocabulary))
+	shenmeci.Serve(&shenmeci.HTTPConfig{
+		Host:       config.Http.Host,
+		Port:       config.Http.Port,
+		StaticPath: config.StaticPath,
+		Segmenter:  segmentation.NewSegmenter(vocabulary),
+	})
 }
