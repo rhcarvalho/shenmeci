@@ -27,30 +27,30 @@ func NewSegmenter(vocabulary []string) Segmenter {
 func (s *dawgSegmenter) Segment(text []rune) (segments [][]rune) {
 	var segment []rune
 	for len(text) > 0 {
-		segment = s.longestPrefixWord(text)
+		segment = s.nextSegment(text)
 		segments = append(segments, segment)
 		text = text[len(segment):]
 	}
 	return segments
 }
 
-func (s *dawgSegmenter) longestPrefixWord(sentence []rune) (word []rune) {
+// nextSegment returns the first segment in text. A segment is always a prefix
+// of text, and it is either the longest word in the Segmenter vocabulary that
+// shares a prefix with text or the longest sequence of non-words.
+func (s *dawgSegmenter) nextSegment(text []rune) (segment []rune) {
 	d := s.dawg
-	longestPrefix := d.LongestCommonPrefix(sentence)
-	if len(longestPrefix) > 0 {
-		return longestPrefix
+	segment = d.LongestCommonPrefix(text)
+	if len(segment) > 0 {
+		return segment
 	}
-	// In this case, there is no word in the dictionary that is a
-	// prefix of the sentence, so we take the longest non-prefix
-	// portion of the sentence as the longest prefix.
-	// This means that unknown terms are not segmented.
-	for len(sentence) > 0 {
-		longestPrefix = d.LongestCommonPrefix(sentence)
-		if len(longestPrefix) > 0 {
-			break
-		}
-		word = append(word, sentence[0])
-		sentence = sentence[1:]
+	// There is no word in the vocabulary that is a prefix of the text,
+	// return the longest non-word portion of the text.
+	// This means that consecutive unknown terms become a single segment.
+	// In practice, for a Segmenter created with a vocabulary of Chinese
+	// terms, this will keep numbers and English text as a single segment.
+	for len(text) > 0 && len(d.LongestCommonPrefix(text)) == 0 {
+		segment = append(segment, text[0])
+		text = text[1:]
 	}
-	return
+	return segment
 }
