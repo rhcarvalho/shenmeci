@@ -7,6 +7,10 @@ import (
 
 var segmenter = NewSegmenter(strings.Fields("语言 信息 处理 世界"))
 
+func TestSegmentEmpty(t *testing.T) {
+	testSegment("", [][]rune{}, t)
+}
+
 func TestSegmentChinese(t *testing.T) {
 	sentence := "语言信息处理"
 	expectedWords := [][]rune{
