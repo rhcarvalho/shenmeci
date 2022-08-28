@@ -1,6 +1,3 @@
-// +build sqlite_json sqlite_json1 json1
-// +build sqlite_fts5 fts5
-
 package shenmeci
 
 import (
