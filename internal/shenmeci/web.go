@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -49,7 +49,7 @@ type RequestInfo struct {
 }
 
 func requestToRequestInfo(r *http.Request) *RequestInfo {
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Println("reading request body:", err)
 	}
