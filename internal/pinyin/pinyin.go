@@ -59,9 +59,7 @@ func toDiacritics(pinyin string) string {
 		}
 		// Make sure there is no "u:" left.
 		// Example: "lu:e4" => "lüè".
-		if strings.Contains(pinyin, "u:") {
-			pinyin = strings.Replace(pinyin, "u:", "ü", 1)
-		}
+		pinyin = strings.Replace(pinyin, "u:", "ü", 1)
 	}
 	return pinyin
 }
