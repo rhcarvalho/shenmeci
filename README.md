@@ -44,3 +44,9 @@ Checkout the repository and then:
 3. Start the HTTP server:
 
     $ go run -tags sqlite_fts5 .
+
+## Deployment
+
+```
+bin/deploy-fly
+```

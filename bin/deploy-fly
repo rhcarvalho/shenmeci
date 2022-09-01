@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# The deploy-fly script builds and deploys to Fly.io.
+# Reference: https://community.fly.io/t/howto-use-podman-instead-of-docker-for-local-builds-and-uploading-container-images/542
+
+# Required manual step:
+# flyctl auth token | podman login -v -u x --password-stdin registry.fly.io
+
+
+set -euo pipefail
+
+SRC=$(dirname $(dirname "${BASH_SOURCE[0]}"))
+
+"$SRC"/bin/build-container-image
+
+podman push --format v2s2 shenmeci docker://registry.fly.io/shenmeci:latest
+
+flyctl deploy
