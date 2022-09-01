@@ -9,39 +9,39 @@ import (
 
 // the map keys are space-separated words to construct the DAWG.
 var dawgs = map[string]*DAWG{
-	"": &DAWG{},
-	"g": &DAWG{children: map[rune]*DAWG{
-		'g': &DAWG{eow: true},
+	"": {},
+	"g": {children: map[rune]*DAWG{
+		'g': {eow: true},
 	}},
-	"go": &DAWG{children: map[rune]*DAWG{
-		'g': &DAWG{children: map[rune]*DAWG{
-			'o': &DAWG{eow: true},
+	"go": {children: map[rune]*DAWG{
+		'g': {children: map[rune]*DAWG{
+			'o': {eow: true},
 		}},
 	}},
-	"g go": &DAWG{children: map[rune]*DAWG{
-		'g': &DAWG{eow: true, children: map[rune]*DAWG{
-			'o': &DAWG{eow: true},
+	"g go": {children: map[rune]*DAWG{
+		'g': {eow: true, children: map[rune]*DAWG{
+			'o': {eow: true},
 		}},
 	}},
-	"g t": &DAWG{children: map[rune]*DAWG{
-		'g': &DAWG{eow: true},
-		't': &DAWG{eow: true},
+	"g t": {children: map[rune]*DAWG{
+		'g': {eow: true},
+		't': {eow: true},
 	}},
-	"go t": &DAWG{children: map[rune]*DAWG{
-		'g': &DAWG{children: map[rune]*DAWG{
-			'o': &DAWG{eow: true},
+	"go t": {children: map[rune]*DAWG{
+		'g': {children: map[rune]*DAWG{
+			'o': {eow: true},
 		}},
-		't': &DAWG{eow: true},
+		't': {eow: true},
 	}},
-	"语 语言 信 信息 处 处理": &DAWG{children: map[rune]*DAWG{
-		'处': &DAWG{eow: true, children: map[rune]*DAWG{
-			'理': &DAWG{eow: true},
+	"语 语言 信 信息 处 处理": {children: map[rune]*DAWG{
+		'处': {eow: true, children: map[rune]*DAWG{
+			'理': {eow: true},
 		}},
-		'语': &DAWG{eow: true, children: map[rune]*DAWG{
-			'言': &DAWG{eow: true},
+		'语': {eow: true, children: map[rune]*DAWG{
+			'言': {eow: true},
 		}},
-		'信': &DAWG{eow: true, children: map[rune]*DAWG{
-			'息': &DAWG{eow: true},
+		'信': {eow: true, children: map[rune]*DAWG{
+			'息': {eow: true},
 		}},
 	}},
 }
@@ -63,29 +63,34 @@ func TestLongestCommonPrefix(t *testing.T) {
 	tests := []struct {
 		words   string
 		queries []query
-	}{{
-		"g go", []query{
-			{"", ""},
-			{"g", "g"},
-			{"go", "go"},
-			{"golang", "go"},
-			{"python", ""},
-		}}, {
-		"g t", []query{
-			{"g", "g"},
-			{"t", "t"},
-			{"golang", "g"},
-			{"tornado", "t"},
-			{"z", ""},
-		}}, {
-		"", []query{
-			{"", ""},
-			{"g", ""},
-			{"golang", ""},
-		}}, {
-		"语 语言 信 信息 处 处理", []query{
-			{"语言信息处理", "语言"},
-		}},
+	}{
+		{
+			"g go", []query{
+				{"", ""},
+				{"g", "g"},
+				{"go", "go"},
+				{"golang", "go"},
+				{"python", ""},
+			},
+		}, {
+			"g t", []query{
+				{"g", "g"},
+				{"t", "t"},
+				{"golang", "g"},
+				{"tornado", "t"},
+				{"z", ""},
+			},
+		}, {
+			"", []query{
+				{"", ""},
+				{"g", ""},
+				{"golang", ""},
+			},
+		}, {
+			"语 语言 信 信息 处 处理", []query{
+				{"语言信息处理", "语言"},
+			},
+		},
 	}
 	for _, test := range tests {
 		d, ok := dawgs[test.words]

@@ -88,7 +88,7 @@ func populateDB() error {
 		return err
 	}
 	// Do not call Rollback because journal_mode = OFF
-	//defer tx.Rollback()
+	// defer tx.Rollback()
 
 	// FIXME: set remove_diacritics=2 when ready to make database require
 	// SQLite >= 3.27.0. See https://sqlite.org/releaselog/3_27_0.html and

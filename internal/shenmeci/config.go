@@ -93,7 +93,8 @@ func ValidateConfig() {
 
 func exampleConfig() []byte {
 	b, _ := json.MarshalIndent(
-		&Config{&HttpConfig{"127.0.0.1", 8080},
+		&Config{
+			&HttpConfig{"127.0.0.1", 8080},
 			"static/",
 			"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
 		}, "", "  ")
