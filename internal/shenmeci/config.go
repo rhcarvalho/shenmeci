@@ -12,7 +12,6 @@ import (
 
 type Config struct {
 	Http       *HttpConfig
-	StaticPath string
 	CedictPath string
 }
 
@@ -51,7 +50,6 @@ func LoadConfig() {
 		}
 		return filepath.Join(filepath.Dir(*configFile), path)
 	}
-	config.StaticPath = absRelToConfigFile(config.StaticPath)
 	config.CedictPath = absRelToConfigFile(config.CedictPath)
 	GlobalConfig = config
 }
@@ -67,16 +65,6 @@ func ValidateConfig() {
 		}
 		if config.Http.Port == 0 {
 			errors = append(errors, "missing Http.Port configuration")
-		}
-	}
-	if len(config.StaticPath) == 0 {
-		errors = append(errors, "missing StaticPath configuration")
-	} else {
-		fi, err := os.Stat(config.StaticPath)
-		if err != nil {
-			errors = append(errors, fmt.Sprint("invalid StaticPath configuration: ", err))
-		} else if !fi.IsDir() {
-			errors = append(errors, fmt.Sprint("StaticPath should be a directory: ", config.StaticPath))
 		}
 	}
 	if len(config.CedictPath) == 0 {
@@ -95,7 +83,6 @@ func exampleConfig() []byte {
 	b, _ := json.MarshalIndent(
 		&Config{
 			&HttpConfig{"127.0.0.1", 8080},
-			"static/",
 			"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz",
 		}, "", "  ")
 	return b

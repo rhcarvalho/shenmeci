@@ -1,7 +1,9 @@
 package main
 
 import (
+	"embed"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"os"
@@ -10,10 +12,18 @@ import (
 	"github.com/rhcarvalho/shenmeci/internal/shenmeci"
 )
 
+//go:embed static
+var static embed.FS
+
 func main() {
 	shenmeci.LoadConfig()
 	shenmeci.ValidateConfig()
 	config := shenmeci.GlobalConfig
+
+	static, err := fs.Sub(static, "static")
+	if err != nil {
+		panic(err)
+	}
 
 	// Test whether we can listen on the provided Host and Port.
 	// If the Host:Port is already in use, we can exit before wasting more resources.
@@ -30,9 +40,9 @@ func main() {
 	shenmeci.LoadDB()
 	defer shenmeci.CloseDB()
 	shenmeci.Serve(&shenmeci.HTTPConfig{
-		Host:       config.Http.Host,
-		Port:       config.Http.Port,
-		StaticPath: config.StaticPath,
-		Segmenter:  segmentation.NewSegmenter(vocabulary),
+		Host:      config.Http.Host,
+		Port:      config.Http.Port,
+		Static:    static,
+		Segmenter: segmentation.NewSegmenter(vocabulary),
 	})
 }

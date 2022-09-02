@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/fs"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -174,18 +174,16 @@ type HTTPConfig struct {
 	Host string
 	Port int
 
-	StaticPath string
+	Static fs.FS
 
 	Segmenter segmentation.Segmenter
 }
 
 // Serve starts an HTTP server.
 func Serve(config *HTTPConfig) {
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, path.Join(config.StaticPath, "index.html"))
-	})
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(config.StaticPath))))
+	http.Handle("/", http.FileServer(http.FS(config.Static)))
 	http.HandleFunc("/segment", segmentHandler(config.Segmenter))
+
 	addr := fmt.Sprintf("%s:%d", config.Host, config.Port)
 	log.Printf("serving at http://%s", addr)
 	err := http.ListenAndServe(addr, nil)

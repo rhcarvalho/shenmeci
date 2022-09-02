@@ -48,7 +48,6 @@ Before running Shenmeci you will need to create a configuration file like this:
         "Host": "127.0.0.1",
         "Port": 8080
       },
-      "StaticPath": "static/",
       "CedictPath": "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
     }
 
