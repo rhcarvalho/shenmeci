@@ -56,13 +56,3 @@ Make sure you have a new version of the SQLite library.
 Start Shenmeci:
 
     $ shenmeci -config path/to/config.json
-
-
-Migrating query logs from MongoDB to SQLite
--------------------------------------------
-
-Data stored in MongoDB can be migrated using `mongoexport`, and imported using a
-script:
-
-    $ mongoexport --db shenmeci --collection queries --out shenmeci-export.json
-    $ python3 import-queries.py --from shenmeci-export.json --to PATH/TO/shenmeci.sqlite
