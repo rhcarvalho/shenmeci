@@ -2,3 +2,4 @@
 dict/*
 icwb2-data/*
 config.json
+/go.work*
