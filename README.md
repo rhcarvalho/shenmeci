@@ -20,28 +20,18 @@ Development repository
 The project source-code is hosted at https://github.com/rhcarvalho/shenmeci.
 
 
-Development/deployment dependencies
------------------------------------
-
-* Go
-* SQLite (>= [3.9.0][sqlite-390], for the [`json1`][sqlite-json1] extension)
-* go-sqlite3
-
-[sqlite-390]: https://www.sqlite.org/releaselog/3_9_0.html
-[sqlite-json1]: https://www.sqlite.org/json1.html
-
 Running
 -------
 
-Download, compile and install in one go:
+You will need a recent version of [Go](https://go.dev).
 
-    $ go get -u -tags 'sqlite_json1 sqlite_fts5' github.com/rhcarvalho/shenmeci
+Checkout the repository and then:
 
-Download the CEDICT Chinese-English dictionary:
+1. Download the CEDICT Chinese-English dictionary:
 
     $ ./download_dict.sh
 
-Before running Shenmeci you will need to create a configuration file like this:
+2. Create a configuration file in the repository root called `config.json`:
 
     {
       "Http": {
@@ -51,7 +41,6 @@ Before running Shenmeci you will need to create a configuration file like this:
       "CedictPath": "dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"
     }
 
-Make sure you have a new version of the SQLite library.
-Start Shenmeci:
+3. Start the HTTP server:
 
-    $ shenmeci -config path/to/config.json
+    $ go run -tags sqlite_fts5 .
