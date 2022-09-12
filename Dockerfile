@@ -29,7 +29,7 @@ ENV PATH=$GOPATH/bin:$PATH
 # Download CC-CEDICT and write config file.
 COPY --chown=shenmeci:shenmeci download_dict.sh ./
 RUN ./download_dict.sh && \
-    echo '{"Http":{"Host":"127.0.0.1","Port":8080},"CedictPath":"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"}' > config.json
+    echo '{"Http":{"Host":"0.0.0.0","Port":8080},"CedictPath":"dict/cedict_1_0_ts_utf-8_mdbg.txt.gz"}' > config.json
 
 # Set flag to enable SQLite's Full-Text Search engine.
 ENV GOFLAGS="-tags=sqlite_fts5"
