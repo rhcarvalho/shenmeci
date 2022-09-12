@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+# The build-container-image script uses podman to build a container image.
+
+set -euo pipefail
+
+SRC=$(dirname $(dirname "${BASH_SOURCE[0]}"))
+BUILD_CONTEXT=$(mktemp -d --tmpdir shenmeci-image-build-context-XXXX)
+
+echo "build context: $BUILD_CONTEXT"
+
+rsync -amF "$SRC" "$BUILD_CONTEXT"
+
+git -C "$SRC" describe --always --dirty > "$BUILD_CONTEXT"/gitrev
+
+podman build -f "$SRC"/Dockerfile -t shenmeci "$BUILD_CONTEXT"
+
+rm -rf -- "$BUILD_CONTEXT"

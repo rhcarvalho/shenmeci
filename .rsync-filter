@@ -1,0 +1,18 @@
+# This file filters what goes into the build context when building a container
+# image. The idea is to avoid accidentally adding untracked files to the image
+# when building from a development checkout.
++ /LICENSE.txt
++ /README.md
++ /download_dict.sh
++ /go.mod
++ /go.sum
++ **/*.go
++ /static/*.html
++ /static/**/*.css
++ /static/**/*.js
++ /static/**/*.png
+# Exclude hidden directories, include all other directories, exclude everything
+# else not matched by the earlier rules.
+- .*/
++ */
+- *
