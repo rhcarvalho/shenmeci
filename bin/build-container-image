@@ -13,6 +13,6 @@ rsync -amF "$SRC" "$BUILD_CONTEXT"
 
 git -C "$SRC" describe --always --dirty > "$BUILD_CONTEXT"/gitrev
 
-podman build -f "$SRC"/Dockerfile -t shenmeci "$BUILD_CONTEXT"
+podman build --pull -f "$SRC"/Dockerfile -t shenmeci "$BUILD_CONTEXT"
 
 rm -rf -- "$BUILD_CONTEXT"
